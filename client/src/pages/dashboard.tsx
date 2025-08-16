@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useState, useEffect } from "react";
-import { Shield, Bell, User } from "lucide-react";
+import { Bell, User } from "lucide-react";
+import WalletGydeLogo from "@/components/WalletGydeLogo";
 import StatusOverview from "@/components/StatusOverview";
 import APIActivityMonitor from "@/components/APIActivityMonitor";
 import RecentAlerts from "@/components/RecentAlerts";
@@ -73,14 +74,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background" data-testid="security-dashboard">
       {/* Header Navigation */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-slate-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Shield className="text-primary text-xl" data-testid="logo-icon" />
-                <h1 className="text-xl font-semibold text-gray-900" data-testid="app-title">
-                  WalletGyde Security Agent
+              <div className="flex items-center space-x-4">
+                <WalletGydeLogo variant="light" data-testid="logo" />
+                <h1 className="text-xl font-semibold text-white" data-testid="app-title">
+                  Security Agent
                 </h1>
               </div>
             </div>
@@ -88,13 +89,13 @@ export default function Dashboard() {
               {/* Alert Counter */}
               <div className="relative">
                 <button 
-                  className="p-2 text-gray-400 hover:text-gray-600 transition-colors" 
+                  className="p-2 text-gray-300 hover:text-white transition-colors" 
                   data-testid="button-notifications"
                 >
                   <Bell className="h-5 w-5" />
                   {activeAlertCount > 0 && (
                     <span 
-                      className="absolute -top-1 -right-1 h-5 w-5 bg-error text-white text-xs rounded-full flex items-center justify-center"
+                      className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
                       data-testid="text-alert-count"
                     >
                       {activeAlertCount}
@@ -105,18 +106,18 @@ export default function Dashboard() {
               
               {/* User Profile */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
                   <User className="text-white text-sm" />
                 </div>
-                <span className="text-sm font-medium text-gray-700" data-testid="text-username">
+                <span className="text-sm font-medium text-gray-200" data-testid="text-username">
                   Security Admin
                 </span>
               </div>
 
               {/* Connection Status */}
               <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-secondary' : 'bg-error'}`}></div>
-                <span className="text-xs text-gray-500" data-testid="text-connection-status">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
+                <span className="text-xs text-gray-300" data-testid="text-connection-status">
                   {isConnected ? 'Live' : 'Offline'}
                 </span>
               </div>
