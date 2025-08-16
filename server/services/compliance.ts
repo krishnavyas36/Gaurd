@@ -121,10 +121,11 @@ export class ComplianceService {
     }, {});
 
     for (const [ip, count] of Object.entries(ipCounts)) {
-      if (count > 100) { // Threshold for suspicious activity
+      const numericCount = count as number;
+      if (numericCount > 100) { // Threshold for suspicious activity
         suspiciousPatterns.push({
           type: "unusual_ip_activity",
-          description: `IP ${ip} made ${count} API calls`,
+          description: `IP ${ip} made ${numericCount} API calls`,
           severity: "warning"
         });
       }

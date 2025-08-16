@@ -180,13 +180,16 @@
 }
 
 .alert-border-critical {
-  @apply border-l-4 border-error bg-error/5;
+  @apply border-l-4 border-error;
+  background-color: hsl(var(--error) / 0.05);
 }
 
 .alert-border-warning {
-  @apply border-l-4 border-warning bg-warning/5;
+  @apply border-l-4 border-warning;
+  background-color: hsl(var(--warning) / 0.05);
 }
 
 .alert-border-info {
-  @apply border-l-4 border-primary bg-primary/5;
+  @apply border-l-4 border-primary;
+  background-color: hsl(var(--primary) / 0.05);
 }

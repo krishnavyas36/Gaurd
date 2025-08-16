@@ -155,7 +155,7 @@ export class MonitoringService {
     if (stats) {
       await storage.createOrUpdateMonitoringStats({
         ...stats,
-        totalApiCalls: stats.totalApiCalls + 1
+        totalApiCalls: (stats.totalApiCalls || 0) + 1
       });
     }
   }

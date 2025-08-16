@@ -178,9 +178,9 @@ export class LLMScannerService {
     if (stats) {
       await storage.createOrUpdateMonitoringStats({
         ...stats,
-        llmResponsesScanned: stats.llmResponsesScanned + 1,
-        llmResponsesFlagged: stats.llmResponsesFlagged + 1,
-        llmResponsesBlocked: action === "blocked" ? stats.llmResponsesBlocked + 1 : stats.llmResponsesBlocked
+        llmResponsesScanned: (stats.llmResponsesScanned || 0) + 1,
+        llmResponsesFlagged: (stats.llmResponsesFlagged || 0) + 1,
+        llmResponsesBlocked: action === "blocked" ? (stats.llmResponsesBlocked || 0) + 1 : (stats.llmResponsesBlocked || 0)
       });
     }
   }

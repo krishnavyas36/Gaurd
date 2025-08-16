@@ -84,7 +84,14 @@ export class MemStorage implements IStorage {
 
     defaultSources.forEach(source => {
       const id = randomUUID();
-      this.apiSources.set(id, { ...source, id, lastActivity: new Date() });
+      this.apiSources.set(id, { 
+        ...source, 
+        id, 
+        lastActivity: new Date(),
+        status: source.status || "active",
+        callsToday: source.callsToday || 0,
+        alertStatus: source.alertStatus || "normal"
+      });
     });
 
     // Initialize default compliance rules
@@ -114,7 +121,13 @@ export class MemStorage implements IStorage {
 
     defaultRules.forEach(rule => {
       const id = randomUUID();
-      this.complianceRules.set(id, { ...rule, id, lastTriggered: null, createdAt: new Date() });
+      this.complianceRules.set(id, { 
+        ...rule, 
+        id, 
+        lastTriggered: null, 
+        createdAt: new Date(),
+        isActive: rule.isActive ?? true
+      });
     });
 
     // Initialize today's stats
@@ -130,7 +143,17 @@ export class MemStorage implements IStorage {
     };
 
     const statsId = randomUUID();
-    this.monitoringStats.set(today, { ...defaultStats, id: statsId });
+    this.monitoringStats.set(today, { 
+      ...defaultStats, 
+      id: statsId,
+      totalApiCalls: defaultStats.totalApiCalls ?? 0,
+      alertsGenerated: defaultStats.alertsGenerated ?? 0,
+      complianceScore: defaultStats.complianceScore ?? 100,
+      sensitiveDataDetected: defaultStats.sensitiveDataDetected ?? 0,
+      llmResponsesScanned: defaultStats.llmResponsesScanned ?? 0,
+      llmResponsesFlagged: defaultStats.llmResponsesFlagged ?? 0,
+      llmResponsesBlocked: defaultStats.llmResponsesBlocked ?? 0
+    });
   }
 
   // Users
@@ -160,7 +183,14 @@ export class MemStorage implements IStorage {
 
   async createApiSource(source: InsertApiSource): Promise<ApiSource> {
     const id = randomUUID();
-    const apiSource: ApiSource = { ...source, id, lastActivity: new Date() };
+    const apiSource: ApiSource = { 
+      ...source, 
+      id, 
+      lastActivity: new Date(),
+      status: source.status || "active",
+      callsToday: source.callsToday || 0,
+      alertStatus: source.alertStatus || "normal"
+    };
     this.apiSources.set(id, apiSource);
     return apiSource;
   }
@@ -191,7 +221,13 @@ export class MemStorage implements IStorage {
 
   async createAlert(alert: InsertAlert): Promise<Alert> {
     const id = randomUUID();
-    const newAlert: Alert = { ...alert, id, timestamp: new Date() };
+    const newAlert: Alert = { 
+      ...alert, 
+      id, 
+      timestamp: new Date(),
+      metadata: alert.metadata || null,
+      status: alert.status || "active"
+    };
     this.alerts.set(id, newAlert);
     return newAlert;
   }
@@ -220,7 +256,13 @@ export class MemStorage implements IStorage {
 
   async createComplianceRule(rule: InsertComplianceRule): Promise<ComplianceRule> {
     const id = randomUUID();
-    const newRule: ComplianceRule = { ...rule, id, lastTriggered: null, createdAt: new Date() };
+    const newRule: ComplianceRule = { 
+      ...rule, 
+      id, 
+      lastTriggered: null, 
+      createdAt: new Date(),
+      isActive: rule.isActive ?? true
+    };
     this.complianceRules.set(id, newRule);
     return newRule;
   }
@@ -251,7 +293,13 @@ export class MemStorage implements IStorage {
 
   async createDataClassification(classification: InsertDataClassification): Promise<DataClassification> {
     const id = randomUUID();
-    const newClassification: DataClassification = { ...classification, id, timestamp: new Date() };
+    const newClassification: DataClassification = { 
+      ...classification, 
+      id, 
+      timestamp: new Date(),
+      content: classification.content || null,
+      isResolved: classification.isResolved ?? false
+    };
     this.dataClassifications.set(id, newClassification);
     return newClassification;
   }
@@ -274,7 +322,12 @@ export class MemStorage implements IStorage {
 
   async createLlmViolation(violation: InsertLlmViolation): Promise<LlmViolation> {
     const id = randomUUID();
-    const newViolation: LlmViolation = { ...violation, id, timestamp: new Date() };
+    const newViolation: LlmViolation = { 
+      ...violation, 
+      id, 
+      timestamp: new Date(),
+      metadata: violation.metadata || null
+    };
     this.llmViolations.set(id, newViolation);
     return newViolation;
   }
@@ -288,7 +341,14 @@ export class MemStorage implements IStorage {
 
   async createIncident(incident: InsertIncident): Promise<Incident> {
     const id = randomUUID();
-    const newIncident: Incident = { ...incident, id, timestamp: new Date() };
+    const newIncident: Incident = { 
+      ...incident, 
+      id, 
+      timestamp: new Date(),
+      metadata: incident.metadata || null,
+      status: incident.status || "open",
+      resolvedAt: null
+    };
     this.incidents.set(id, newIncident);
     return newIncident;
   }
@@ -316,7 +376,17 @@ export class MemStorage implements IStorage {
       return updated;
     } else {
       const id = randomUUID();
-      const newStats: MonitoringStats = { ...stats, id };
+      const newStats: MonitoringStats = { 
+      ...stats, 
+      id,
+      totalApiCalls: stats.totalApiCalls ?? 0,
+      alertsGenerated: stats.alertsGenerated ?? 0,
+      complianceScore: stats.complianceScore ?? 100,
+      sensitiveDataDetected: stats.sensitiveDataDetected ?? 0,
+      llmResponsesScanned: stats.llmResponsesScanned ?? 0,
+      llmResponsesFlagged: stats.llmResponsesFlagged ?? 0,
+      llmResponsesBlocked: stats.llmResponsesBlocked ?? 0
+    };
       this.monitoringStats.set(stats.date, newStats);
       return newStats;
     }
