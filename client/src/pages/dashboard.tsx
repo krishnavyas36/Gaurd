@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useState, useEffect } from "react";
-import { Bell, User } from "lucide-react";
+import { Link } from "wouter";
+import { Bell, User, Filter, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import WalletGydeLogo from "@/components/WalletGydeLogo";
 import StatusOverview from "@/components/StatusOverview";
 import APIActivityMonitor from "@/components/APIActivityMonitor";
@@ -84,6 +86,31 @@ export default function Dashboard() {
                   Security Agent
                 </h1>
               </div>
+              
+              {/* Navigation Menu */}
+              <nav className="flex items-center space-x-1 ml-8">
+                <Link href="/">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-300 hover:text-white hover:bg-slate-700"
+                    data-testid="nav-dashboard"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+                <Link href="/compliance">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-gray-300 hover:text-white hover:bg-slate-700"
+                    data-testid="nav-compliance"
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Compliance Filtering
+                  </Button>
+                </Link>
+              </nav>
             </div>
             <div className="flex items-center space-x-4">
               {/* Alert Counter */}

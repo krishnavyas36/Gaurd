@@ -386,6 +386,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Compliance endpoints for filtering
+  app.get("/api/compliance/stats", async (_req, res) => {
+    try {
+      const [
+        totalFiltered,
+        highRiskItems,
+        complianceScore
+      ] = await Promise.all([
+        storage.getDataClassifications(1000).then(items => items.length),
+        storage.getDataClassifications(1000).then(items => 
+          items.filter(item => item.riskLevel === 'high' && !item.isResolved).length
+        ),
+        complianceService.calculateComplianceScore()
+      ]);
+
+      res.json({
+        totalFiltered,
+        highRiskItems,
+        complianceScore,
+        activeRules: await storage.getActiveComplianceRules().then(rules => rules.length),
+        lastUpdate: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch compliance stats" });
+    }
+  });
+
+  app.get("/api/compliance/filtered-items", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const riskLevel = req.query.risk as string;
+      
+      // Get recent data classifications as filtered items
+      let items = await storage.getDataClassifications(limit);
+      
+      if (riskLevel) {
+        items = items.filter(item => item.riskLevel === riskLevel);
+      }
+
+      // Transform to filtered items format
+      const filteredItems = items.map(item => ({
+        id: item.id,
+        type: item.dataType || 'unknown',
+        content: `${item.dataType} detected in API response`,
+        riskLevel: item.riskLevel,
+        timestamp: item.timestamp,
+        action: item.riskLevel === 'high' ? 'blocked' : 
+                item.riskLevel === 'medium' ? 'flagged' : 'monitored',
+        source: item.source || 'API Monitor'
+      }));
+
+      res.json(filteredItems);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch filtered items" });
+    }
+  });
+
   // Periodic tasks
   setInterval(async () => {
     try {
