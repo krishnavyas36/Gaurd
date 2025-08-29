@@ -6,6 +6,7 @@ import { monitoringService } from "./services/monitoring";
 import { complianceService } from "./services/compliance";
 import { llmScannerService } from "./services/llmScanner";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
+import { nanoid } from "nanoid";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -385,6 +386,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to calculate compliance score" });
     }
   });
+
+  // Enhanced monitoring endpoint for external integrations (including Plaid)
+  app.post('/api/monitor', async (req, res) => {
+    try {
+      const { source, endpoint, data, responseTime, metadata } = req.body;
+      
+      console.log(`Monitoring data received from ${source}: ${endpoint}`);
+      
+      // Process monitoring data
+      const monitoringResult = await processMonitoringData({
+        source,
+        endpoint,
+        data,
+        responseTime,
+        metadata,
+        timestamp: new Date()
+      });
+      
+      // Check for compliance violations or security issues
+      const complianceCheck = await checkMonitoringCompliance(source, data);
+      
+      // Generate alerts if needed
+      if (complianceCheck.violations.length > 0) {
+        await generateComplianceAlert(source, endpoint, complianceCheck.violations);
+      }
+      
+      res.json({ 
+        success: true, 
+        message: 'Monitoring data processed',
+        result: monitoringResult,
+        compliance: complianceCheck,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error processing monitoring data:', error);
+      res.status(500).json({ error: 'Failed to process monitoring data' });
+    }
+  });
+
+  // Helper function for processing monitoring data
+  async function processMonitoringData(monitoringData: any) {
+    const riskScore = calculateRiskScore(monitoringData);
+    const patterns = detectPatterns(monitoringData);
+    
+    // Store monitoring statistics
+    const stats = {
+      date: new Date().toISOString().split('T')[0],
+      totalApiCalls: 1,
+      avgResponseTime: monitoringData.responseTime || 0,
+      source: monitoringData.source
+    };
+    
+    return {
+      processed: true,
+      riskScore,
+      patterns,
+      stats
+    };
+  }
+
+  async function checkMonitoringCompliance(source: string, data: any) {
+    const violations = [];
+    
+    if (data && typeof data === 'object') {
+      const dataString = JSON.stringify(data).toLowerCase();
+      
+      // PII detection patterns
+      if (dataString.match(/\b\d{3}-\d{2}-\d{4}\b/) || dataString.includes('ssn')) {
+        violations.push({ type: 'ssn_detected', severity: 'high', description: 'Social Security Number detected' });
+      }
+      
+      if (dataString.match(/\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b/) || dataString.includes('card')) {
+        violations.push({ type: 'credit_card_detected', severity: 'high', description: 'Credit card information detected' });
+      }
+      
+      if (dataString.match(/\b[a-za-z0-9._%+-]+@[a-za-z0-9.-]+\.[a-z]{2,}\b/)) {
+        violations.push({ type: 'email_detected', severity: 'medium', description: 'Email address detected' });
+      }
+      
+      if (dataString.includes('account') && dataString.includes('number')) {
+        violations.push({ type: 'account_number_detected', severity: 'high', description: 'Account number detected' });
+      }
+    }
+    
+    // Create data classifications for violations
+    for (const violation of violations) {
+      const classification = {
+        id: nanoid(),
+        dataType: violation.type,
+        content: `${violation.description} from ${source}`,
+        riskLevel: violation.severity,
+        source: source,
+        timestamp: new Date(),
+        isResolved: false
+      };
+      
+      await storage.createDataClassification(classification);
+    }
+    
+    return {
+      compliant: violations.length === 0,
+      violations,
+      score: violations.length === 0 ? 100 : Math.max(0, 100 - (violations.length * 20))
+    };
+  }
+
+  async function generateComplianceAlert(source: string, endpoint: string, violations: any[]) {
+    const alert = {
+      title: `Compliance Violation: ${source}`,
+      description: `Detected ${violations.length} compliance violation(s) in ${endpoint}`,
+      severity: violations.some((v: any) => v.severity === 'high') ? 'high' : 'medium',
+      source: 'compliance-monitor',
+      status: 'active',
+      metadata: {
+        violations,
+        endpoint,
+        originalSource: source
+      }
+    };
+    
+    await storage.createAlert(alert);
+    
+    // Broadcast via WebSocket
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          type: 'new_alert',
+          data: alert
+        }));
+      }
+    });
+    
+    console.log(`Generated compliance alert for ${source}: ${violations.length} violations`);
+  }
+
+  function calculateRiskScore(monitoringData: any) {
+    let score = 0;
+    
+    if (monitoringData.responseTime > 5000) score += 20;
+    if (monitoringData.source === 'plaid-api') score += 10;
+    if (monitoringData.metadata?.recordCount > 100) score += 15;
+    
+    return Math.min(100, score);
+  }
+
+  function detectPatterns(monitoringData: any) {
+    return {
+      highVolume: monitoringData.metadata?.recordCount > 50,
+      slowResponse: monitoringData.responseTime > 3000,
+      financialData: monitoringData.source?.includes('plaid')
+    };
+  }
 
   // Enhanced Compliance endpoints for filtering
   app.get("/api/compliance/stats", async (_req, res) => {
