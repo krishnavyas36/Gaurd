@@ -30,7 +30,33 @@ Open: **http://localhost:5000/plaid-demo**
 2. Watch for security alerts in real-time
 3. Check compliance score changes
 
-### **4. View Security Results**
+### **4. Create Custom Compliance Rules**
+
+#### **Navigate to Compliance Page**
+- Go to: **http://localhost:5000/compliance**
+- Click on "Filter Rules" tab
+- Use the "Create Filter Rule" form on the left
+
+#### **Create Rule Examples:**
+1. **PII Detection Rule**:
+   - Name: "SSN Detection in Transactions"
+   - Type: "PII Detection"
+   - Severity: "High"
+   - Description: "Detect Social Security Numbers in transaction data"
+
+2. **Financial Data Rule**:
+   - Name: "Credit Card Protection"
+   - Type: "Financial Data"
+   - Severity: "Critical"
+   - Description: "Block credit card numbers from API responses"
+
+3. **GDPR Compliance**:
+   - Name: "EU User Data Protection"
+   - Type: "GDPR Consent"
+   - Severity: "High"
+   - Description: "Ensure GDPR compliance for EU users"
+
+### **5. View Security Results**
 
 #### **Dashboard View**
 - Real-time API monitoring statistics
@@ -46,7 +72,7 @@ Open: **http://localhost:5000/plaid-demo**
 
 ### **Real Plaid Integration**
 ```
-🔗 Link Token: link-sandbox-574c1aa9-6d87-4525-b000-48a8c0b190a8
+🔗 Link Token: link-sandbox-7125cf28-0316-4d91-b327-7cb4107ad564
 ✅ Status: ACTIVE
 🔒 Security: ALL CALLS MONITORED
 ```
@@ -56,7 +82,7 @@ Open: **http://localhost:5000/plaid-demo**
 📊 API Calls Today: Updated in real-time
 🛡️ PII Detection: Active (SSN, emails, cards)
 ⚠️  Violations: Automatically classified
-🎯 Compliance Score: Live calculation
+🎯 Compliance Score: Live calculation (currently 90%)
 ```
 
 ### **Live Security Alerts**
@@ -64,7 +90,15 @@ Open: **http://localhost:5000/plaid-demo**
 🚨 HIGH: SSN detected in transaction data
 🚨 HIGH: Credit card information detected  
 ⚠️  MEDIUM: Email address detected
-📋 Compliance Score: 40% (violations detected)
+📋 Compliance Score: 90% (violations detected)
+```
+
+### **Rule Creation Working**
+```
+✅ CREATE RULE BUTTON: Now functional
+✅ RULE CREATED: "Demo Credit Card Detection" 
+✅ API ENDPOINT: POST /api/compliance/rules working
+✅ UI INTEGRATION: Form submits and refreshes data
 ```
 
 ## 🎯 Demo Talking Points
@@ -74,18 +108,21 @@ Open: **http://localhost:5000/plaid-demo**
 - "PII detection uses pattern matching and content analysis"
 - "Compliance rules are enforced in real-time without affecting performance"
 - "WebSocket integration provides live dashboard updates"
+- "Create custom rules through intuitive UI"
 
 ### **For Business Audience**
 - "Banking data is automatically protected against exposure"
 - "Regulatory compliance (GDPR, PCI DSS) is built-in"
 - "Security incidents are tracked and managed automatically"
 - "Complete audit trails for financial audits"
+- "Customize security rules for your business needs"
 
 ### **For Compliance Teams**
 - "All sensitive data access is logged and classified"
 - "Compliance violations trigger immediate alerts"
 - "Audit-ready documentation generated automatically"
 - "Risk scores calculated for all financial data interactions"
+- "Create and manage compliance rules easily"
 
 ## 🛠️ Demo Scenarios
 
@@ -99,7 +136,12 @@ Open: **http://localhost:5000/plaid-demo**
 - View compliance dashboard → Show violation tracking
 - Check audit trail → Show complete logging
 
-### **Scenario 3: Error Handling**
+### **Scenario 3: Rule Management**
+- Create new compliance rule → Show UI workflow
+- Toggle rule on/off → Show real-time updates
+- View rule effectiveness → Show triggered alerts
+
+### **Scenario 4: Error Handling**
 - Trigger API error → Show incident creation
 - View error logs → Show security context
 - Check alert system → Show notification flow
@@ -111,6 +153,8 @@ Open: **http://localhost:5000/plaid-demo**
 - ✅ **Zero Performance Impact**: No delays to banking operations  
 - ✅ **Automatic Compliance**: No manual security processes needed
 - ✅ **Complete Audit Trail**: Every action logged and traceable
+- ✅ **Custom Rule Engine**: Business-specific compliance rules
+- ✅ **Live Dashboard Updates**: Real-time security monitoring
 
 ## 🚀 Ready for Production
 
@@ -120,5 +164,6 @@ Your demo shows a **production-ready security system** that:
 - Provides real-time security monitoring
 - Maintains complete audit trails
 - Scales with your application growth
+- Allows custom rule creation and management
 
-**Your Plaid integration now has enterprise-grade security protection!**
+**Your Plaid integration now has enterprise-grade security protection with full customization capabilities!**

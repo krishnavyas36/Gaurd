@@ -76,6 +76,7 @@ export default function ComplianceFilter() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/compliance/rules'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/compliance/stats'] });
       setNewRule({
         name: "",
         ruleType: "pii_detection",
@@ -86,14 +87,46 @@ export default function ComplianceFilter() {
     }
   });
 
-  const toggleRule = useMutation({
-    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      return apiRequest('PATCH', `/api/compliance/rules/${id}`, { isActive: !isActive });
+  const updateRule = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return apiRequest('PATCH', `/api/compliance/rules/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/compliance/rules'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/compliance/stats'] });
     }
   });
+
+  const handleCreateRule = async () => {
+    if (!newRule.name || !newRule.description) return;
+    
+    try {
+      await createRule.mutateAsync({
+        name: newRule.name,
+        ruleType: newRule.ruleType,
+        description: newRule.description,
+        severity: newRule.severity,
+        config: {
+          enabled: true,
+          pattern: newRule.ruleType === 'pii_detection' ? 'ssn|credit_card|email' : '',
+          action: 'alert'
+        }
+      });
+    } catch (error) {
+      console.error('Failed to create rule:', error);
+    }
+  };
+
+  const handleToggleRule = async (ruleId: string, isActive: boolean) => {
+    try {
+      await updateRule.mutateAsync({
+        id: ruleId,
+        data: { isActive: !isActive }
+      });
+    } catch (error) {
+      console.error('Failed to toggle rule:', error);
+    }
+  };
 
   const getRuleTypeColor = (ruleType: string) => {
     switch (ruleType) {
@@ -140,21 +173,6 @@ export default function ComplianceFilter() {
       default:
         return <Shield className="h-4 w-4 text-gray-500" />;
     }
-  };
-
-  const handleCreateRule = () => {
-    if (!newRule.name || !newRule.description) return;
-    
-    const ruleConfig = {
-      ...newRule,
-      config: {
-        threshold: newRule.ruleType === 'rate_limit' ? 100 : undefined,
-        patterns: newRule.ruleType === 'pii_detection' ? ['ssn', 'credit_card', 'email'] : undefined,
-        requiredFields: newRule.ruleType === 'gdpr_consent' ? ['marketing', 'analytics'] : undefined,
-      }
-    };
-    
-    createRule.mutate(ruleConfig);
   };
 
   return (
@@ -373,7 +391,7 @@ export default function ComplianceFilter() {
                           <div className="flex items-center space-x-2 ml-4">
                             <Switch
                               checked={rule.isActive}
-                              onCheckedChange={() => toggleRule.mutate({ id: rule.id, isActive: rule.isActive })}
+                              onCheckedChange={() => handleToggleRule(rule.id, rule.isActive)}
                               data-testid={`switch-rule-active-${index}`}
                             />
                             <Button variant="ghost" size="sm" data-testid={`button-edit-rule-${index}`}>
