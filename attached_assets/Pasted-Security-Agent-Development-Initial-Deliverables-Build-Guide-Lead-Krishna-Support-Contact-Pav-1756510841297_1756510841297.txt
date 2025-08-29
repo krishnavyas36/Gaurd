@@ -1,0 +1,180 @@
+Security Agent Development – Initial Deliverables & Build Guide
+Lead: Krishna
+Support Contact: Pavan (n8n integration)
+Prepared by: Caleb Kioh
+
+Purpose
+Develop an AI-powered Security Agent that continuously audits Walletgyde’s workflows and flags compliance anomalies, supporting GDPR, CCPA, and SOC2-aligned standards. This agent will help maintain a strong security posture as we scale Walletgyde AI and integrate financial APIs.
+
+Immediate Deliverables (First 2 Weeks)
+Week
+Task
+Description
+1
+Onboarding & Access Setup
+- Join Notion, GitHub, and Slack.- Review existing compliance documentation.- Complete security onboarding checklist.- Review the Compliance Standards Doc you authored for context.
+1
+Policy Review + Initial Drafting
+- Audit our current internal privacy/security protocols.- Draft a structured policy outline highlighting areas where the Security Agent can automate monitoring or reporting.
+2
+Security Agent Research & Prototype
+- Research and outline the technical blueprint for the Security Agent.- Begin prototyping core features: 1. Audit logs for API activity. 2. Alerts for unusual access patterns. 3. Data classification scanning for sensitive information leaks.- Integrate compliance checklists into the agent logic.
+2
+LLM Risk Analysis
+- Review how LLMs handle memory, prompt history, and potential hallucinations in sensitive contexts.- Identify risk mitigation techniques for financial and personal data.- Draft a “LLM Privacy & Risk Controls” section to add to our compliance guide.
+
+
+How to Build the Security Agent
+1. Core Functions
+The Security Agent should:
+Monitor API calls (Plaid, OpenAI, internal CRM).
+
+
+Flag anomalies (e.g., spikes in data pulls, unusual IP activity).
+
+
+Classify sensitive data (detect PII, financial account numbers, SSNs in logs).
+
+
+Audit compliance adherence (GDPR consent checks, SOC2 logging).
+
+
+Trigger automated alerts (via Slack, Email, or n8n webhook).
+
+
+
+2. Technical Architecture
+Data Ingestion Layer
+
+
+Pull logs from Plaid API, OpenAI API, FastAPI backend logs.
+
+
+Use n8n workflows to collect and normalize data streams.
+
+
+Detection & Classification Layer
+
+
+Use Python scripts with regex & spaCy/NLP to detect PII or sensitive keywords.
+
+
+Apply AI classification (OpenAI or Claude API) for edge cases.
+
+
+Compliance Rule Engine
+
+
+Store rules in JSON (e.g., "max_api_calls_per_hour": 1000).
+
+
+If a rule is broken, pass event to the Action Layer.
+
+
+Action Layer
+
+
+For critical events → Send Slack alert (via n8n).
+
+
+For minor warnings → Add to weekly compliance digest.
+
+
+
+3. Step-by-Step Build Plan
+Phase 1 – Environment Setup (Day 1–2)
+Get access to Plaid sandbox & backend logs.
+
+
+Set up n8n workflow editor account.
+
+
+Connect Slack API to n8n for automated alerts.
+
+
+Phase 2 – Data Pipeline (Day 3–5)
+Create n8n nodes for:
+
+
+Plaid API pull (transaction & metadata).
+
+
+Backend log ingestion (FastAPI logs).
+
+
+AI API call tracking (OpenAI usage logs).
+
+
+Phase 3 – Compliance Checks (Day 6–8)
+Write Python function to scan text/log data for:
+
+
+Credit card patterns (regex).
+
+
+SSN patterns.
+
+
+High-volume transaction pulls.
+
+
+Store compliance rules in JSON config file.
+
+
+Phase 4 – Alerting & Reporting (Day 9–11)
+If a compliance rule is broken:
+
+
+Trigger Slack alert (for real-time issues).
+
+
+Write incident to a Notion incident log via n8n.
+
+
+Phase 5 – LLM Risk Control (Day 12–14)
+Add middleware that checks all outbound LLM responses for:
+
+
+Disallowed financial advice.
+
+
+Unverified data sources.
+
+
+If violation found → rewrite or block the response before sending to user.
+
+
+
+Collaboration
+Pavan – Currently working on n8n automations.
+
+
+Meet with Pavan to review how existing n8n workflows handle API events.
+
+
+Adapt his workflow templates to Security Agent triggers.
+
+
+
+Tools & Ecosystem
+AI Stack: GPT-5, LangChain, OpenAI Agent API, LLaMA, Claude
+
+
+Backend: FastAPI, Python
+
+
+Data Systems: Plaid API, internal coach-client CRM systems
+
+
+Agent Tools: Zapier, n8n, Replit, GCP VM (future state)
+
+
+Security Frameworks: GDPR, CCPA, SOC2-aligned controls (review-level)
+
+
+
+Expected Outcomes by End of Week 2
+Drafted Security Agent Requirements Doc ready for review.
+
+
+Initial n8n-integrated prototype that can run a basic compliance audit workflow.
