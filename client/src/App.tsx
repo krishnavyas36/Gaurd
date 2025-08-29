@@ -8,6 +8,8 @@ import Dashboard from "@/pages/dashboard";
 import ComplianceFilter from "@/pages/ComplianceFilter";
 
 import LLMTesting from "@/pages/LLMTesting";
+import AlertsPage from "@/pages/AlertsPage";
+import ProfilePage from "@/pages/ProfilePage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -15,8 +17,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/compliance" component={ComplianceFilter} />
-
       <Route path="/llm-testing" component={LLMTesting} />
+      <Route path="/alerts" component={AlertsPage} />
+      <Route path="/profile" component={ProfilePage} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />
     </Switch>

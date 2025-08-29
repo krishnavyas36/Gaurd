@@ -61,30 +61,37 @@ export default function Navigation({ activeAlertCount = 0, isConnected = false }
           <div className="flex items-center space-x-4">
             {/* Alert Counter */}
             <div className="relative">
-              <button 
-                className="p-2 text-gray-300 hover:text-white transition-colors" 
-                data-testid="button-notifications"
-              >
-                <Bell className="h-5 w-5" />
-                {activeAlertCount > 0 && (
-                  <span 
-                    className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
-                    data-testid="text-alert-count"
-                  >
-                    {activeAlertCount}
-                  </span>
-                )}
-              </button>
+              <Link href="/alerts">
+                <button 
+                  className="p-2 text-gray-300 hover:text-white transition-colors" 
+                  data-testid="button-notifications"
+                  title="View security alerts"
+                >
+                  <Bell className="h-5 w-5" />
+                  {activeAlertCount > 0 && (
+                    <span 
+                      className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+                      data-testid="text-alert-count"
+                    >
+                      {activeAlertCount}
+                    </span>
+                  )}
+                </button>
+              </Link>
             </div>
             
             {/* User Profile */}
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <User className="text-white text-sm" />
-              </div>
-              <span className="text-sm font-medium text-gray-200" data-testid="text-username">
-                Security Admin
-              </span>
+              <Link href="/profile">
+                <div className="flex items-center space-x-2 hover:bg-slate-700 rounded-lg px-2 py-1 transition-colors cursor-pointer">
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                    <User className="text-white text-sm" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-200" data-testid="text-username">
+                    Security Admin
+                  </span>
+                </div>
+              </Link>
             </div>
 
             {/* Connection Status */}
