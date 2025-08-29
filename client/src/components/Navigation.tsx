@@ -44,6 +44,16 @@ export default function Navigation({ activeAlertCount = 0, isConnected = false }
                   Compliance Filtering
                 </Button>
               </Link>
+              <Link href="/plaid-demo">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-300 hover:text-white hover:bg-slate-700"
+                  data-testid="nav-plaid-demo"
+                >
+                  Plaid Integration
+                </Button>
+              </Link>
             </nav>
           </div>
           

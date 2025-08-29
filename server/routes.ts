@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { monitoringService } from "./services/monitoring";
 import { complianceService } from "./services/compliance";
 import { llmScannerService } from "./services/llmScanner";
+import { plaidService } from "./services/plaidService";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 
@@ -538,6 +539,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
       financialData: monitoringData.source?.includes('plaid')
     };
   }
+
+  // ============================================
+  // PLAID INTEGRATION ENDPOINTS
+  // ============================================
+
+  // Create Plaid Link token for user onboarding
+  app.post("/api/plaid/link-token", async (req, res) => {
+    try {
+      const { userId, userEmail } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+
+      console.log(`🔗 Creating Plaid Link token for user: ${userId}`);
+      
+      const response = await plaidService.createLinkToken(userId, userEmail);
+      
+      res.json({
+        link_token: response.data.link_token,
+        expiration: response.data.expiration,
+        request_id: response.data.request_id
+      });
+    } catch (error: any) {
+      console.error('Error creating link token:', error.message);
+      res.status(500).json({ 
+        error: "Failed to create link token",
+        details: error.response?.data || error.message
+      });
+    }
+  });
+
+  // Exchange public token for access token
+  app.post("/api/plaid/exchange-token", async (req, res) => {
+    try {
+      const { public_token } = req.body;
+      
+      if (!public_token) {
+        return res.status(400).json({ error: "public_token is required" });
+      }
+
+      console.log(`🔄 Exchanging Plaid public token...`);
+      
+      const response = await plaidService.exchangePublicToken(public_token);
+      
+      res.json({
+        access_token: response.data.access_token,
+        item_id: response.data.item_id,
+        request_id: response.data.request_id
+      });
+    } catch (error: any) {
+      console.error('Error exchanging token:', error.message);
+      res.status(500).json({ 
+        error: "Failed to exchange token",
+        details: error.response?.data || error.message
+      });
+    }
+  });
+
+  // Get user accounts with security monitoring
+  app.post("/api/plaid/accounts", async (req, res) => {
+    try {
+      const { access_token } = req.body;
+      
+      if (!access_token) {
+        return res.status(400).json({ error: "access_token is required" });
+      }
+
+      console.log(`🏦 Fetching Plaid accounts with security monitoring...`);
+      
+      const response = await plaidService.getAccounts(access_token);
+      
+      res.json({
+        accounts: response.data.accounts,
+        item: response.data.item,
+        request_id: response.data.request_id,
+        total_accounts: response.data.accounts.length
+      });
+    } catch (error: any) {
+      console.error('Error fetching accounts:', error.message);
+      res.status(500).json({ 
+        error: "Failed to fetch accounts",
+        details: error.response?.data || error.message
+      });
+    }
+  });
+
+  // Get user transactions with security monitoring  
+  app.post("/api/plaid/transactions", async (req, res) => {
+    try {
+      const { access_token, start_date, end_date, count = 100, offset = 0 } = req.body;
+      
+      if (!access_token || !start_date || !end_date) {
+        return res.status(400).json({ 
+          error: "access_token, start_date, and end_date are required" 
+        });
+      }
+
+      console.log(`💳 Fetching Plaid transactions from ${start_date} to ${end_date} with security monitoring...`);
+      
+      const response = await plaidService.getTransactions(access_token, start_date, end_date);
+      
+      res.json({
+        transactions: response.data.transactions.slice(offset, offset + count),
+        accounts: response.data.accounts,
+        total_transactions: response.data.total_transactions,
+        request_id: response.data.request_id
+      });
+    } catch (error: any) {
+      console.error('Error fetching transactions:', error.message);
+      res.status(500).json({ 
+        error: "Failed to fetch transactions",
+        details: error.response?.data || error.message
+      });
+    }
+  });
+
+  // Get user identity with security monitoring
+  app.post("/api/plaid/identity", async (req, res) => {
+    try {
+      const { access_token } = req.body;
+      
+      if (!access_token) {
+        return res.status(400).json({ error: "access_token is required" });
+      }
+
+      console.log(`🆔 Fetching Plaid identity data with security monitoring...`);
+      
+      const response = await plaidService.getIdentity(access_token);
+      
+      res.json({
+        accounts: response.data.accounts,
+        item: response.data.item,
+        request_id: response.data.request_id
+      });
+    } catch (error: any) {
+      console.error('Error fetching identity:', error.message);
+      res.status(500).json({ 
+        error: "Failed to fetch identity",
+        details: error.response?.data || error.message
+      });
+    }
+  });
+
+  // Get user income with security monitoring
+  app.post("/api/plaid/income", async (req, res) => {
+    try {
+      const { access_token } = req.body;
+      
+      if (!access_token) {
+        return res.status(400).json({ error: "access_token is required" });
+      }
+
+      console.log(`💰 Fetching Plaid income data with security monitoring...`);
+      
+      const response = await plaidService.getIncome(access_token);
+      
+      res.json({
+        income: response.data.income,
+        item: response.data.item,
+        request_id: response.data.request_id
+      });
+    } catch (error: any) {
+      console.error('Error fetching income:', error.message);
+      res.status(500).json({ 
+        error: "Failed to fetch income",
+        details: error.response?.data || error.message
+      });
+    }
+  });
+
+  // Get auth data with security monitoring
+  app.post("/api/plaid/auth", async (req, res) => {
+    try {
+      const { access_token } = req.body;
+      
+      if (!access_token) {
+        return res.status(400).json({ error: "access_token is required" });
+      }
+
+      console.log(`🔐 Fetching Plaid auth data with security monitoring...`);
+      
+      const response = await plaidService.getAuth(access_token);
+      
+      res.json({
+        accounts: response.data.accounts,
+        numbers: response.data.numbers,
+        item: response.data.item,
+        request_id: response.data.request_id
+      });
+    } catch (error: any) {
+      console.error('Error fetching auth data:', error.message);
+      res.status(500).json({ 
+        error: "Failed to fetch auth data",
+        details: error.response?.data || error.message
+      });
+    }
+  });
 
   // Enhanced Compliance endpoints for filtering
   app.get("/api/compliance/stats", async (_req, res) => {
