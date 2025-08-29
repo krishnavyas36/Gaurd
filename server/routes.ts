@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { monitoringService } from "./services/monitoring";
 import { complianceService } from "./services/compliance";
 import { llmScannerService } from "./services/llmScanner";
+import { openaiService } from "./services/openaiService";
 import { plaidService } from "./services/plaidService";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
@@ -545,6 +546,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('LLM scan error:', error);
       res.status(500).json({ error: "Failed to scan LLM response" });
+    }
+  });
+
+  // LLM generation with integrated security scanning
+  app.post("/api/llm/generate", async (req, res) => {
+    try {
+      const { prompt, type = "general", context } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({ error: "Prompt is required" });
+      }
+
+      let llmResponse;
+      
+      switch (type) {
+        case "financial_advice":
+          llmResponse = await openaiService.generateFinancialAdvice(prompt);
+          break;
+        case "insider_claims":
+          llmResponse = await openaiService.generateInsiderClaims(prompt);
+          break;
+        case "general":
+        default:
+          llmResponse = await openaiService.generateGeneralInfo(prompt);
+          break;
+      }
+
+      // Automatically scan the response
+      const scanResult = await llmScannerService.scanResponse({
+        content: llmResponse.content,
+        metadata: {
+          model: llmResponse.model,
+          type,
+          usage: llmResponse.usage,
+          generatedAt: new Date().toISOString()
+        }
+      });
+
+      res.json({
+        original: llmResponse,
+        security: scanResult,
+        finalContent: scanResult.action === "allow" ? llmResponse.content : 
+                     scanResult.action === "rewrite" ? scanResult.modifiedContent :
+                     "Content blocked by security filter"
+      });
+    } catch (error: any) {
+      console.error('LLM generation error:', error);
+      res.status(500).json({ 
+        error: "Failed to generate content",
+        details: error.message
+      });
     }
   });
 

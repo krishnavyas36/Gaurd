@@ -16,10 +16,30 @@ interface ScanResult {
   message: string;
 }
 
+interface GenerationResult {
+  original: {
+    content: string;
+    model: string;
+    usage: {
+      promptTokens: number;
+      completionTokens: number;
+      totalTokens: number;
+    };
+  };
+  security: ScanResult;
+  finalContent: string;
+}
+
 export default function LLMTesting() {
   const [testContent, setTestContent] = useState("");
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  
+  // LLM Generation states
+  const [generationPrompt, setGenerationPrompt] = useState("");
+  const [generationType, setGenerationType] = useState<"general" | "financial_advice" | "insider_claims">("general");
+  const [generationResult, setGenerationResult] = useState<GenerationResult | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const testExamples = [
     {
@@ -68,6 +88,42 @@ export default function LLMTesting() {
       });
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const handleGenerateContent = async () => {
+    if (!generationPrompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const result = await apiRequest('/api/llm/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          prompt: generationPrompt,
+          type: generationType,
+          context: `Generate ${generationType} content for testing security scanning.`
+        })
+      });
+      
+      setGenerationResult(result);
+    } catch (error: any) {
+      console.error('Generation failed:', error);
+      setGenerationResult({
+        original: {
+          content: `Generation failed: ${error.message}`,
+          model: "error",
+          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
+        },
+        security: {
+          isViolation: true,
+          action: "block",
+          confidence: 0,
+          message: "Error: Failed to generate content"
+        },
+        finalContent: "Generation failed"
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
