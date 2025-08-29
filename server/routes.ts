@@ -522,6 +522,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`Generated compliance alert for ${source}: ${violations.length} violations`);
   }
 
+  // LLM response scanning middleware endpoint
+  app.post("/api/llm/scan-response", async (req, res) => {
+    try {
+      const { content, metadata } = req.body;
+      
+      if (!content) {
+        return res.status(400).json({ error: "Content is required" });
+      }
+
+      const scanResult = await llmScannerService.scanResponse({
+        content,
+        metadata
+      });
+
+      res.json({
+        ...scanResult,
+        message: scanResult.isViolation 
+          ? `Violation detected: ${scanResult.violationType}` 
+          : "Content passed security scan"
+      });
+    } catch (error: any) {
+      console.error('LLM scan error:', error);
+      res.status(500).json({ error: "Failed to scan LLM response" });
+    }
+  });
+
+  // LLM stats endpoint
+  app.get("/api/llm/stats", async (_req, res) => {
+    try {
+      const stats = await llmScannerService.getViolationStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch LLM stats" });
+    }
+  });
+
   function calculateRiskScore(monitoringData: any) {
     let score = 0;
     

@@ -202,6 +202,44 @@ export class LLMScannerService {
 
     return stats;
   }
+        title: "LLM Response Violation",
+        description: `${type.replace("_", " ")} detected in LLM response`,
+        severity: type === "pii_exposure" ? "critical" : "warning",
+        source: "LLM Scanner",
+        status: "active"
+      });
+    }
+
+    // Update daily stats
+    const today = new Date().toISOString().split('T')[0];
+    const stats = await storage.getMonitoringStats(today);
+    if (stats) {
+      await storage.createOrUpdateMonitoringStats({
+        ...stats,
+        llmResponsesScanned: (stats.llmResponsesScanned || 0) + 1,
+        llmResponsesFlagged: (stats.llmResponsesFlagged || 0) + 1,
+        llmResponsesBlocked: action === "blocked" ? (stats.llmResponsesBlocked || 0) + 1 : (stats.llmResponsesBlocked || 0)
+      });
+    }
+  }
+
+  async getViolationStats() {
+    const violations = await storage.getLlmViolations(100);
+    const stats = {
+      total: violations.length,
+      byType: violations.reduce((acc: any, violation) => {
+        acc[violation.violationType] = (acc[violation.violationType] || 0) + 1;
+        return acc;
+      }, {}),
+      byAction: violations.reduce((acc: any, violation) => {
+        acc[violation.action] = (acc[violation.action] || 0) + 1;
+        return acc;
+      }, {}),
+      recent: violations.slice(0, 10)
+    };
+
+    return stats;
+  }
 }
 
 export const llmScannerService = new LLMScannerService();

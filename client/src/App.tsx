@@ -7,6 +7,7 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import ComplianceFilter from "@/pages/ComplianceFilter";
 import PlaidDemo from "@/pages/PlaidDemo";
+import LLMTesting from "@/pages/LLMTesting";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/compliance" component={ComplianceFilter} />
       <Route path="/plaid-demo" component={PlaidDemo} />
+      <Route path="/llm-testing" component={LLMTesting} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />
     </Switch>

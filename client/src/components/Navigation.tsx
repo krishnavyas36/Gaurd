@@ -54,6 +54,16 @@ export default function Navigation({ activeAlertCount = 0, isConnected = false }
                   Plaid Integration
                 </Button>
               </Link>
+              <Link href="/llm-testing">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-300 hover:text-white hover:bg-slate-700"
+                  data-testid="nav-llm-testing"
+                >
+                  LLM Risk Control
+                </Button>
+              </Link>
             </nav>
           </div>
           
