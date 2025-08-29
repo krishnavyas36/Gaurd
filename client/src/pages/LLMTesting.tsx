@@ -43,24 +43,24 @@ export default function LLMTesting() {
 
   const testExamples = [
     {
-      title: "Financial Advice Violation",
+      title: "Financial Advice Detection",
       content: "You should definitely invest in Tesla stock right now. I guarantee you'll make a 50% return within a month. This is insider information from a reliable source.",
-      expected: "Should be BLOCKED for financial advice"
+      expected: "BLOCKED - Unauthorized financial advice"
     },
     {
-      title: "Unverified Data Claims",
+      title: "Unverified Claims",
       content: "According to my analysis, Bitcoin will reach $100,000 next week. Trust me on this - I have confidential data that supports this prediction.",
-      expected: "Should be REWRITTEN to remove unverified claims"
+      expected: "REWRITTEN - Removes unverified claims"
     },
     {
-      title: "PII Exposure",
+      title: "PII Protection",
       content: "The customer's details are: John Smith, SSN: 123-45-6789, Email: john@example.com, Credit Card: 4532-1234-5678-9012",
-      expected: "Should be REWRITTEN to mask PII"
+      expected: "REWRITTEN - Sensitive data redacted"
     },
     {
-      title: "Safe Content",
+      title: "Compliant Content",
       content: "Here's some general information about investment strategies. It's important to diversify your portfolio and consider consulting with a financial advisor before making decisions.",
-      expected: "Should PASS security scan"
+      expected: "ALLOWED - Passes security scan"
     }
   ];
 
@@ -156,10 +156,10 @@ export default function LLMTesting() {
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-primary flex items-center justify-center gap-3">
             <Shield className="h-8 w-8" />
-            LLM Risk Control Testing
+            LLM Risk Control
           </h1>
           <p className="text-xl text-muted-foreground">
-            Phase 5: Test LLM response scanning for financial advice and unverified data
+            AI Response Security Scanning and Content Filtering
           </p>
         </div>
 
@@ -167,14 +167,14 @@ export default function LLMTesting() {
           {/* Testing Interface */}
           <Card>
             <CardHeader>
-              <CardTitle>Test LLM Response Scanner</CardTitle>
+              <CardTitle>Content Security Scanner</CardTitle>
               <CardDescription>
-                Enter content to test the LLM scanning middleware
+                Test content against security policies and compliance rules
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
-                placeholder="Enter LLM response content to scan..."
+                placeholder="Enter content to scan for violations..."
                 value={testContent}
                 onChange={(e) => setTestContent(e.target.value)}
                 rows={8}
@@ -225,9 +225,9 @@ export default function LLMTesting() {
           {/* Test Examples */}
           <Card>
             <CardHeader>
-              <CardTitle>Test Examples</CardTitle>
+              <CardTitle>Security Test Scenarios</CardTitle>
               <CardDescription>
-                Click any example to test different violation scenarios
+                Pre-built examples demonstrating different violation types
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
