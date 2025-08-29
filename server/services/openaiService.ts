@@ -27,12 +27,11 @@ export class OpenAIService {
       const systemPrompt = request.context || "You are a helpful financial assistant. Provide informative responses about finance and investments.";
       
       const completion = await openai.chat.completions.create({
-        model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini", // Using gpt-4o-mini as it's widely available and cost-effective
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: request.prompt }
         ],
-        max_tokens: request.maxTokens || 500,
         temperature: 0.7
       });
 
