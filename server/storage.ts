@@ -168,6 +168,7 @@ export class MemStorage implements IStorage {
         ...alert, 
         id, 
         timestamp: new Date(),
+        status: alert.status || "active",
         metadata: {}
       });
     });

@@ -14,7 +14,8 @@ interface SecurityAlert {
   severity: "low" | "medium" | "high" | "critical";
   source: string;
   status: "active" | "acknowledged" | "resolved";
-  createdAt: string;
+  timestamp: string;
+  metadata?: any;
 }
 
 export default function AlertsPage() {
@@ -69,21 +70,43 @@ export default function AlertsPage() {
   };
 
   const handleAcknowledge = async (alertId: string) => {
+    console.log('Acknowledging alert with ID:', alertId);
     try {
-      await fetch(`/api/alerts/${alertId}/acknowledge`, {
-        method: 'PATCH'
+      const response = await fetch(`/api/alerts/${alertId}/acknowledge`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to acknowledge alert: ${response.statusText} - ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Alert acknowledged successfully:', result);
       // Refresh will happen automatically due to refetchInterval
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
+      alert(`Error: ${error.message}`);
     }
   };
 
   const handleResolve = async (alertId: string) => {
     try {
-      await fetch(`/api/alerts/${alertId}/resolve`, {
-        method: 'PATCH'
+      const response = await fetch(`/api/alerts/${alertId}/resolve`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to resolve alert: ${response.statusText}`);
+      }
+      
+      console.log('Alert resolved successfully');
       // Refresh will happen automatically due to refetchInterval
     } catch (error) {
       console.error('Failed to resolve alert:', error);
@@ -195,7 +218,7 @@ export default function AlertsPage() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>Source: {alert.source}</span>
                         <span>•</span>
-                        <span>{new Date(alert.createdAt).toLocaleString()}</span>
+                        <span>{new Date(alert.timestamp).toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
