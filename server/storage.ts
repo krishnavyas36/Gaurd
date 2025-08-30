@@ -130,6 +130,48 @@ export class MemStorage implements IStorage {
       });
     });
 
+    // Initialize default alerts
+    const defaultAlerts: InsertAlert[] = [
+      {
+        title: "API Usage Anomaly Detected",
+        description: "OpenAI API alert status escalated to elevated",
+        severity: "high",
+        source: "Monitoring Service",
+        status: "active"
+      },
+      {
+        title: "PII Detection Alert",
+        description: "Potential SSN found in API response data",
+        severity: "critical", 
+        source: "Compliance Engine",
+        status: "active"
+      },
+      {
+        title: "Rate Limit Warning",
+        description: "API calls approaching hourly limit threshold",
+        severity: "medium",
+        source: "Rate Monitor",
+        status: "acknowledged"
+      },
+      {
+        title: "GDPR Compliance Check",
+        description: "User consent verification required",
+        severity: "medium",
+        source: "Compliance Engine",
+        status: "resolved"
+      }
+    ];
+
+    defaultAlerts.forEach(alert => {
+      const id = randomUUID();
+      this.alerts.set(id, { 
+        ...alert, 
+        id, 
+        timestamp: new Date(),
+        metadata: {}
+      });
+    });
+
     // Initialize today's stats
     const defaultStats: InsertMonitoringStats = {
       date: today,

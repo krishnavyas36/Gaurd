@@ -70,11 +70,10 @@ export default function AlertsPage() {
 
   const handleAcknowledge = async (alertId: string) => {
     try {
-      await apiRequest(`/api/alerts/${alertId}/acknowledge`, {
+      await fetch(`/api/alerts/${alertId}/acknowledge`, {
         method: 'PATCH'
       });
-      // Refresh the data
-      window.location.reload();
+      // Refresh will happen automatically due to refetchInterval
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
     }
@@ -82,22 +81,22 @@ export default function AlertsPage() {
 
   const handleResolve = async (alertId: string) => {
     try {
-      await apiRequest(`/api/alerts/${alertId}/resolve`, {
+      await fetch(`/api/alerts/${alertId}/resolve`, {
         method: 'PATCH'
       });
-      // Refresh the data
-      window.location.reload();
+      // Refresh will happen automatically due to refetchInterval
     } catch (error) {
       console.error('Failed to resolve alert:', error);
     }
   };
 
-  const filteredAlerts = alerts?.filter((alert: SecurityAlert) => {
+  const alertsList = Array.isArray(alerts) ? alerts : [];
+  const filteredAlerts = alertsList.filter((alert: SecurityAlert) => {
     if (filter === "all") return true;
     if (filter === "active") return alert.status === "active";
     if (filter === "critical") return alert.severity === "critical";
     return true;
-  }) || [];
+  });
 
   if (isLoading) {
     return (
@@ -135,7 +134,7 @@ export default function AlertsPage() {
               onClick={() => setFilter("all")}
               data-testid="filter-all"
             >
-              All ({alerts?.length || 0})
+              All ({alertsList.length})
             </Button>
             <Button
               variant={filter === "active" ? "default" : "outline"}
@@ -143,7 +142,7 @@ export default function AlertsPage() {
               onClick={() => setFilter("active")}
               data-testid="filter-active"
             >
-              Active ({alerts?.filter((a: SecurityAlert) => a.status === "active").length || 0})
+              Active ({alertsList.filter((a: SecurityAlert) => a.status === "active").length})
             </Button>
             <Button
               variant={filter === "critical" ? "default" : "outline"}
@@ -151,7 +150,7 @@ export default function AlertsPage() {
               onClick={() => setFilter("critical")}
               data-testid="filter-critical"
             >
-              Critical ({alerts?.filter((a: SecurityAlert) => a.severity === "critical").length || 0})
+              Critical ({alertsList.filter((a: SecurityAlert) => a.severity === "critical").length})
             </Button>
           </div>
         </div>

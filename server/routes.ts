@@ -194,6 +194,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/alerts/:id/acknowledge", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const updatedAlert = await storage.updateAlert(id, { status: "acknowledged" });
+      
+      if (!updatedAlert) {
+        return res.status(404).json({ error: "Alert not found" });
+      }
+
+      // Broadcast alert update
+      broadcastToAllClients({ type: 'alert_acknowledged', alert: updatedAlert });
+      
+      res.json(updatedAlert);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to acknowledge alert" });
+    }
+  });
+
+  app.patch("/api/alerts/:id/resolve", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const updatedAlert = await storage.updateAlert(id, { status: "resolved" });
+      
+      if (!updatedAlert) {
+        return res.status(404).json({ error: "Alert not found" });
+      }
+
+      // Broadcast alert update
+      broadcastToAllClients({ type: 'alert_resolved', alert: updatedAlert });
+      
+      res.json(updatedAlert);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to resolve alert" });
+    }
+  });
+
   // Compliance Rules endpoints
   app.get("/api/compliance/rules", async (_req, res) => {
     try {
