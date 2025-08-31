@@ -7,6 +7,7 @@ import { complianceService } from "./services/compliance";
 import { llmScannerService } from "./services/llmScanner";
 import { openaiService } from "./services/openaiService";
 import { plaidService } from "./services/plaidService";
+import { discordService } from "./services/discordService";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 
@@ -462,6 +463,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error processing monitoring data:', error);
       res.status(500).json({ error: 'Failed to process monitoring data' });
+    }
+  });
+
+  // Discord webhook test endpoint
+  app.post("/api/discord/test", async (_req, res) => {
+    try {
+      const success = await discordService.testConnection();
+      
+      if (success) {
+        res.json({ 
+          success: true, 
+          message: "Discord webhook test successful! Check your Discord channel for the test message.",
+          timestamp: new Date().toISOString()
+        });
+      } else {
+        res.status(400).json({ 
+          success: false, 
+          error: "Discord webhook test failed. Please check your DISCORD_WEBHOOK_URL configuration.",
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Discord webhook test error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Discord webhook test failed with error", 
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
     }
   });
 

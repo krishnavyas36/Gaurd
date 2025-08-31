@@ -1,6 +1,7 @@
 import { storage } from "../storage";
 import { sendSecurityAlert } from "./slack";
 import { emailService } from "./email";
+import { discordService } from "./discordService";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
@@ -45,12 +46,23 @@ export class MonitoringService {
       const maxCalls = (rateLimitRule.config as any).maxCallsPerHour || 1000;
       
       if (apiSource.callsToday > maxCalls) {
-        await this.createAlert({
+        const alert = {
           title: "API Rate Limit Exceeded",
           description: `${apiSource.name} has exceeded the rate limit with ${apiSource.callsToday} calls`,
           severity: "critical",
           source: apiSource.name,
           status: "active"
+        };
+
+        await this.createAlert(alert);
+
+        // Send Discord notification
+        await discordService.sendSecurityAlert({
+          title: alert.title,
+          description: alert.description,
+          severity: alert.severity,
+          source: alert.source,
+          timestamp: new Date()
         });
 
         // Update API source alert status
@@ -84,6 +96,15 @@ export class MonitoringService {
           source: source,
           content: classification.redactedContent,
           isResolved: false
+        });
+
+        // Send Discord notification for data classification
+        await discordService.sendDataClassificationAlert({
+          dataType: classification.type,
+          riskLevel: classification.risk,
+          source: source,
+          content: classification.redactedContent,
+          timestamp: new Date()
         });
 
         // Create alert for high-risk data
@@ -128,6 +149,15 @@ export class MonitoringService {
 
   async createAlert(alertData: any) {
     const alert = await storage.createAlert(alertData);
+    
+    // Send Discord notification for all alerts
+    await discordService.sendSecurityAlert({
+      title: alert.title,
+      description: alert.description,
+      severity: alert.severity,
+      source: alert.source,
+      timestamp: alert.timestamp
+    });
     
     // Send Slack notification for critical alerts
     if (alert.severity === "critical") {

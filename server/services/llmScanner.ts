@@ -1,4 +1,5 @@
 import { storage } from "../storage";
+import { discordService } from "./discordService";
 import { monitoringService } from "./monitoring";
 
 interface LLMResponse {
@@ -151,7 +152,7 @@ export class LLMScannerService {
   }
 
   private async logViolation(type: string, content: string, action: string) {
-    await storage.createLlmViolation({
+    const violation = await storage.createLlmViolation({
       violationType: type,
       content: content.substring(0, 500), // Store first 500 chars for review
       action,
@@ -159,6 +160,14 @@ export class LLMScannerService {
         timestamp: new Date().toISOString(),
         confidence: type === "financial_advice" ? 0.9 : 0.8
       }
+    });
+
+    // Send Discord notification for LLM violations
+    await discordService.sendLLMViolationAlert({
+      violationType: type,
+      content: content.substring(0, 200), // Shorter content for Discord
+      action,
+      timestamp: new Date()
     });
 
     // Create alert for serious violations
