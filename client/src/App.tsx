@@ -10,6 +10,7 @@ import ComplianceFilter from "@/pages/ComplianceFilter";
 import LLMTesting from "@/pages/LLMTesting";
 import AlertsPage from "@/pages/AlertsPage";
 import ProfilePage from "@/pages/ProfilePage";
+import ReportsPage from "@/pages/ReportsPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/llm-testing" component={LLMTesting} />
       <Route path="/alerts" component={AlertsPage} />
       <Route path="/profile" component={ProfilePage} />
+      <Route path="/reports" component={ReportsPage} />
       <Route path="/landing" component={Landing} />
       <Route component={NotFound} />
     </Switch>

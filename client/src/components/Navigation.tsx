@@ -55,6 +55,17 @@ export default function Navigation({ activeAlertCount = 0, isConnected = false }
                   LLM Risk Control
                 </Button>
               </Link>
+
+              <Link href="/reports">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-300 hover:text-white hover:bg-slate-700"
+                  data-testid="nav-reports"
+                >
+                  Security Reports
+                </Button>
+              </Link>
             </nav>
           </div>
           

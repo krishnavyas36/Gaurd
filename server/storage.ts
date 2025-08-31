@@ -173,6 +173,92 @@ export class MemStorage implements IStorage {
       });
     });
 
+    // Initialize sample data classifications
+    const defaultClassifications: InsertDataClassification[] = [
+      {
+        dataType: "SSN",
+        riskLevel: "high",
+        source: "Plaid API Response",
+        content: "***-**-1234 (redacted)",
+        isResolved: false
+      },
+      {
+        dataType: "Credit Card",
+        riskLevel: "high", 
+        source: "Transaction Data",
+        content: "****-****-****-5678 (redacted)",
+        isResolved: true
+      },
+      {
+        dataType: "Email Address",
+        riskLevel: "medium",
+        source: "User Profile API",
+        content: "user@example.com",
+        isResolved: false
+      }
+    ];
+
+    defaultClassifications.forEach(classification => {
+      const id = randomUUID();
+      this.dataClassifications.set(id, { 
+        ...classification, 
+        id, 
+        timestamp: new Date(),
+        isResolved: classification.isResolved ?? false
+      });
+    });
+
+    // Initialize sample incidents
+    const defaultIncidents: InsertIncident[] = [
+      {
+        severity: "high",
+        description: "Unauthorized API access attempt detected from suspicious IP address",
+        status: "investigating",
+        source: "API Gateway Monitor"
+      },
+      {
+        severity: "medium", 
+        description: "Multiple failed authentication attempts detected",
+        status: "resolved",
+        source: "Auth Service"
+      }
+    ];
+
+    defaultIncidents.forEach(incident => {
+      const id = randomUUID();
+      this.incidents.set(id, { 
+        ...incident, 
+        id, 
+        timestamp: new Date(),
+        resolvedAt: incident.status === "resolved" ? new Date() : null,
+        metadata: {}
+      });
+    });
+
+    // Initialize sample LLM violations  
+    const defaultViolations: InsertLlmViolation[] = [
+      {
+        violationType: "financial_advice",
+        content: "You should definitely invest all your money in this stock",
+        action: "blocked"
+      },
+      {
+        violationType: "unverified_data",
+        content: "Based on insider information, this company will announce...",
+        action: "rewritten"
+      }
+    ];
+
+    defaultViolations.forEach(violation => {
+      const id = randomUUID();
+      this.llmViolations.set(id, { 
+        ...violation, 
+        id, 
+        timestamp: new Date(),
+        metadata: {}
+      });
+    });
+
     // Initialize today's stats
     const defaultStats: InsertMonitoringStats = {
       date: today,
