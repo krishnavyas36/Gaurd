@@ -77,6 +77,17 @@ export default function Navigation({ activeAlertCount = 0, isConnected = false }
                   Advanced Compliance
                 </Button>
               </Link>
+
+              <Link href="/monitoring-control">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-300 hover:text-white hover:bg-slate-700"
+                  data-testid="nav-monitoring-control"
+                >
+                  Monitoring Control
+                </Button>
+              </Link>
             </nav>
           </div>
           

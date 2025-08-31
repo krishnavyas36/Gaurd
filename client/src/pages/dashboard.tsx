@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Bell, User, Filter, Settings } from "lucide-react";
+import { Bell, User, Filter, Settings, Shield, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WalletGydeLogo from "@/components/WalletGydeLogo";
 import StatusOverview from "@/components/StatusOverview";
@@ -155,6 +155,54 @@ export default function Dashboard() {
 
       {/* Main Dashboard Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Monitoring Status Banner */}
+        <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Shield className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-blue-900">Security Monitoring Status</h2>
+                <p className="text-blue-700">Ready to protect your financial applications with real-time monitoring</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="text-right">
+                <div className="text-sm text-blue-600 font-medium">Status: Inactive</div>
+                <div className="text-xs text-blue-500">Click to activate monitoring</div>
+              </div>
+              <Link href="/monitoring-control">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6" data-testid="button-activate-monitoring">
+                  <Activity className="h-4 w-4 mr-2" />
+                  Activate Monitoring
+                </Button>
+              </Link>
+            </div>
+          </div>
+          
+          {/* Quick Actions */}
+          <div className="mt-4 pt-4 border-t border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-blue-700">
+                <strong>Quick Start:</strong> Activate monitoring → Test with sample data → View real-time alerts
+              </div>
+              <div className="flex space-x-2">
+                <Link href="/advanced-compliance">
+                  <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                    Test Scanner
+                  </Button>
+                </Link>
+                <Link href="/alerts">
+                  <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                    View Alerts
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         {/* Status Overview Cards */}
         <StatusOverview 
           stats={dashboardData.stats} 

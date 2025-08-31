@@ -12,6 +12,7 @@ import AlertsPage from "@/pages/AlertsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ReportsPage from "@/pages/ReportsPage";
 import CompliancePage from "@/pages/CompliancePage";
+import MonitoringControlPage from "@/pages/MonitoringControlPage";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/compliance" component={ComplianceFilter} />
       <Route path="/advanced-compliance" component={CompliancePage} />
+      <Route path="/monitoring-control" component={MonitoringControlPage} />
       <Route path="/llm-testing" component={LLMTesting} />
       <Route path="/alerts" component={AlertsPage} />
       <Route path="/profile" component={ProfilePage} />
