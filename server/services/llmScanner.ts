@@ -47,17 +47,10 @@ export class LLMScannerService {
   async scanResponse(response: LLMResponse): Promise<ScanResult> {
     const content = response.content.toLowerCase();
     
-    // Debug: Log the content being scanned
-    console.log(`LLM Scanner - Testing content: "${content}"`);
-    
     // Check for financial advice violations
-    const financialAdviceMatch = this.financialAdvicePatterns.some(pattern => {
-      const match = pattern.test(content);
-      if (match) {
-        console.log(`LLM Scanner - Pattern matched: ${pattern.source}`);
-      }
-      return match;
-    });
+    const financialAdviceMatch = this.financialAdvicePatterns.some(pattern => 
+      pattern.test(content)
+    );
 
     if (financialAdviceMatch) {
       await this.logViolation("financial_advice", response.content, "blocked");

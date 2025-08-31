@@ -71,8 +71,6 @@ class PlaidEnhancedService {
         access_token: accessToken,
         start_date: startDate,
         end_date: endDate,
-        count: 500,
-        offset: 0,
       };
 
       const response = await this.client.transactionsGet(request);
@@ -127,7 +125,7 @@ class PlaidEnhancedService {
       // Create security incident for API failure
       await storage.createIncident({
         severity: 'high',
-        description: `Plaid transactions API call failed: ${error.message}`,
+        description: `Plaid transactions API call failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         status: 'investigating',
         source: 'Plaid Enhanced Service'
       });
@@ -185,7 +183,7 @@ class PlaidEnhancedService {
       // Create security incident for API failure
       await storage.createIncident({
         severity: 'high',
-        description: `Plaid accounts API call failed: ${error.message}`,
+        description: `Plaid accounts API call failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         status: 'investigating',
         source: 'Plaid Enhanced Service'
       });
