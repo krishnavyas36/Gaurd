@@ -7,6 +7,9 @@ import { complianceService } from "./services/compliance";
 import { llmScannerService } from "./services/llmScanner";
 import { openaiService } from "./services/openaiService";
 import { plaidService } from "./services/plaidService";
+import { plaidEnhancedService } from "./services/plaidEnhancedService";
+import { logIngestionService } from "./services/logIngestionService";
+import { complianceEngine } from "./services/complianceEngine";
 import { discordService } from "./services/discordService";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
@@ -463,6 +466,242 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error processing monitoring data:', error);
       res.status(500).json({ error: 'Failed to process monitoring data' });
+    }
+  });
+
+  // Enhanced Plaid transaction pull endpoint
+  app.post("/api/plaid/transactions/pull", async (req, res) => {
+    try {
+      const { access_token, start_date, end_date } = req.body;
+      
+      if (!access_token || !start_date || !end_date) {
+        return res.status(400).json({ 
+          error: "Missing required fields: access_token, start_date, end_date" 
+        });
+      }
+      
+      console.log(`Pulling Plaid transactions from ${start_date} to ${end_date}`);
+      
+      const transactions = await plaidEnhancedService.pullTransactionsAndMetadata(
+        access_token, 
+        start_date, 
+        end_date
+      );
+      
+      res.json({ 
+        success: true, 
+        transactions,
+        count: transactions.length,
+        date_range: `${start_date} to ${end_date}`,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error pulling Plaid transactions:', error);
+      res.status(500).json({ 
+        error: "Failed to pull transactions", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Enhanced Plaid accounts pull endpoint  
+  app.post("/api/plaid/accounts/pull", async (req, res) => {
+    try {
+      const { access_token } = req.body;
+      
+      if (!access_token) {
+        return res.status(400).json({ error: "Missing required field: access_token" });
+      }
+      
+      console.log('Pulling Plaid accounts and metadata');
+      
+      const accounts = await plaidEnhancedService.pullAccountsAndMetadata(access_token);
+      
+      res.json({ 
+        success: true, 
+        accounts,
+        count: accounts.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error pulling Plaid accounts:', error);
+      res.status(500).json({ 
+        error: "Failed to pull accounts", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // High volume transaction check endpoint
+  app.post("/api/plaid/check-volume", async (req, res) => {
+    try {
+      const { access_token, account_id, time_window } = req.body;
+      
+      if (!access_token || !account_id) {
+        return res.status(400).json({ 
+          error: "Missing required fields: access_token, account_id" 
+        });
+      }
+      
+      const isHighVolume = await plaidEnhancedService.checkHighVolumeTransactions(
+        access_token, 
+        account_id, 
+        time_window || 24
+      );
+      
+      res.json({ 
+        success: true, 
+        high_volume_detected: isHighVolume,
+        account_id,
+        time_window: time_window || 24,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error checking transaction volume:', error);
+      res.status(500).json({ 
+        error: "Failed to check transaction volume", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // FastAPI log ingestion endpoint
+  app.post("/api/logs/fastapi", async (req, res) => {
+    try {
+      await logIngestionService.ingestFastAPILog(req.body);
+      res.json({ 
+        success: true, 
+        message: "FastAPI log ingested successfully",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error ingesting FastAPI log:', error);
+      res.status(500).json({ 
+        error: "Failed to ingest log", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // OpenAI usage log ingestion endpoint
+  app.post("/api/logs/openai", async (req, res) => {
+    try {
+      await logIngestionService.ingestOpenAILog(req.body);
+      res.json({ 
+        success: true, 
+        message: "OpenAI log ingested successfully",
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error ingesting OpenAI log:', error);
+      res.status(500).json({ 
+        error: "Failed to ingest log", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Log metrics endpoint
+  app.get("/api/logs/metrics", async (req, res) => {
+    try {
+      const timeWindow = parseInt(req.query.hours as string) || 24;
+      const metrics = await logIngestionService.getLogMetrics(timeWindow);
+      
+      res.json({ 
+        success: true, 
+        metrics,
+        time_window_hours: timeWindow,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error getting log metrics:', error);
+      res.status(500).json({ 
+        error: "Failed to get log metrics", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Compliance scan endpoint
+  app.post("/api/compliance/scan", async (req, res) => {
+    try {
+      const { text, source, type } = req.body;
+      
+      if (!text || !source) {
+        return res.status(400).json({ 
+          error: "Missing required fields: text, source" 
+        });
+      }
+      
+      let violations = [];
+      
+      switch (type) {
+        case 'text':
+          violations = await complianceEngine.scanTextForCompliance(text, source);
+          break;
+        case 'transaction':
+          violations = await complianceEngine.scanTransactionForCompliance(JSON.parse(text), source);
+          break;
+        case 'api':
+          violations = await complianceEngine.scanAPICallForCompliance(JSON.parse(text), source);
+          break;
+        case 'ai':
+          violations = await complianceEngine.scanAIUsageForCompliance(JSON.parse(text), source);
+          break;
+        default:
+          violations = await complianceEngine.scanTextForCompliance(text, source);
+      }
+      
+      res.json({ 
+        success: true, 
+        violations,
+        violation_count: violations.length,
+        source,
+        type: type || 'text',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error running compliance scan:', error);
+      res.status(500).json({ 
+        error: "Failed to run compliance scan", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Compliance config endpoint
+  app.get("/api/compliance/config", async (req, res) => {
+    try {
+      const config = complianceEngine.getConfig();
+      res.json({ 
+        success: true, 
+        config,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error getting compliance config:', error);
+      res.status(500).json({ 
+        error: "Failed to get compliance config", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // Compliance report endpoint
+  app.get("/api/compliance/report", async (req, res) => {
+    try {
+      const report = await complianceEngine.getComplianceReport();
+      res.json({ 
+        success: true, 
+        report,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error getting compliance report:', error);
+      res.status(500).json({ 
+        error: "Failed to get compliance report", 
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

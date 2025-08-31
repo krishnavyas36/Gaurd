@@ -66,6 +66,17 @@ export default function Navigation({ activeAlertCount = 0, isConnected = false }
                   Security Reports
                 </Button>
               </Link>
+
+              <Link href="/advanced-compliance">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-gray-300 hover:text-white hover:bg-slate-700"
+                  data-testid="nav-advanced-compliance"
+                >
+                  Advanced Compliance
+                </Button>
+              </Link>
             </nav>
           </div>
           
