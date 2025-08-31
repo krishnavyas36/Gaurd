@@ -89,7 +89,7 @@ export default function AlertsPage() {
       // Refresh will happen automatically due to refetchInterval
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
-      alert(`Error: ${error.message}`);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

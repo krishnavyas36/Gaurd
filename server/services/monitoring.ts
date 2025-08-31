@@ -156,7 +156,7 @@ export class MonitoringService {
       description: alert.description,
       severity: alert.severity,
       source: alert.source,
-      timestamp: alert.timestamp
+      timestamp: alert.timestamp || new Date()
     });
     
     // Send Slack notification for critical alerts

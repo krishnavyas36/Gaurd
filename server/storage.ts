@@ -204,7 +204,8 @@ export class MemStorage implements IStorage {
         ...classification, 
         id, 
         timestamp: new Date(),
-        isResolved: classification.isResolved ?? false
+        isResolved: classification.isResolved ?? false,
+        content: classification.content || null
       });
     });
 
@@ -231,7 +232,8 @@ export class MemStorage implements IStorage {
         id, 
         timestamp: new Date(),
         resolvedAt: incident.status === "resolved" ? new Date() : null,
-        metadata: {}
+        metadata: {},
+        status: incident.status || null
       });
     });
 
