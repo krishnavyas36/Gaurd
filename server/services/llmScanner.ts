@@ -17,14 +17,21 @@ interface ScanResult {
 
 export class LLMScannerService {
   private financialAdvicePatterns = [
-    /you should invest/i,
+    /you should.*invest/i,
+    /invest.*all.*money/i,
+    /invest.*your.*money/i,
     /buy.*stock/i,
     /sell.*stock/i,
     /guaranteed.*return/i,
     /financial.*advice/i,
     /investment.*recommendation/i,
-    /put your money in/i,
-    /best.*investment/i
+    /put.*money.*in/i,
+    /best.*investment/i,
+    /definitely.*invest/i,
+    /must.*invest/i,
+    /should.*buy/i,
+    /recommend.*investing/i,
+    /advice.*to.*invest/i
   ];
 
   private unverifiedDataPatterns = [
@@ -40,10 +47,17 @@ export class LLMScannerService {
   async scanResponse(response: LLMResponse): Promise<ScanResult> {
     const content = response.content.toLowerCase();
     
+    // Debug: Log the content being scanned
+    console.log(`LLM Scanner - Testing content: "${content}"`);
+    
     // Check for financial advice violations
-    const financialAdviceMatch = this.financialAdvicePatterns.some(pattern => 
-      pattern.test(content)
-    );
+    const financialAdviceMatch = this.financialAdvicePatterns.some(pattern => {
+      const match = pattern.test(content);
+      if (match) {
+        console.log(`LLM Scanner - Pattern matched: ${pattern.source}`);
+      }
+      return match;
+    });
 
     if (financialAdviceMatch) {
       await this.logViolation("financial_advice", response.content, "blocked");
