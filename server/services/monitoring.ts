@@ -1,15 +1,7 @@
 import { storage } from "../storage";
-import { sendSecurityAlert } from "./slack";
-import { emailService } from "./email";
 import { discordService } from "./discordService";
-import { execFile } from "child_process";
-import { promisify } from "util";
-import path from "path";
-
-const execFileAsync = promisify(execFile);
 
 export class MonitoringService {
-  private readonly pythonScriptPath = path.join(process.cwd(), "server", "python");
 
   async processApiCall(source: string, endpoint: string, responseData: any) {
     try {
@@ -80,14 +72,20 @@ export class MonitoringService {
 
   async classifyData(data: any, source: string) {
     try {
-      // Call Python data classifier
-      const dataString = JSON.stringify(data);
-      const { stdout } = await execFileAsync("python3", [
-        path.join(this.pythonScriptPath, "data_classifier.py"),
-        dataString
-      ]);
+      // Simple data classification without Python scripts
+      const dataString = JSON.stringify(data).toLowerCase();
+      const classifications = [];
 
-      const classifications = JSON.parse(stdout);
+      // Check for PII patterns
+      if (dataString.includes('ssn') || /\b\d{3}-?\d{2}-?\d{4}\b/.test(dataString)) {
+        classifications.push({ type: 'SSN', risk: 'high', redactedContent: dataString.replace(/\b\d{3}-?\d{2}-?\d{4}\b/g, 'XXX-XX-XXXX') });
+      }
+      if (/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/.test(dataString)) {
+        classifications.push({ type: 'Credit Card', risk: 'high', redactedContent: dataString.replace(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, 'XXXX-XXXX-XXXX-XXXX') });
+      }
+      if (/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/.test(dataString)) {
+        classifications.push({ type: 'Email', risk: 'medium', redactedContent: dataString.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL_REDACTED]') });
+      }
       
       for (const classification of classifications) {
         await storage.createDataClassification({
@@ -126,21 +124,18 @@ export class MonitoringService {
   async detectAnomalies() {
     try {
       const apiSources = await storage.getApiSources();
-      const { stdout } = await execFileAsync("python3", [
-        path.join(this.pythonScriptPath, "anomaly_detector.py"),
-        JSON.stringify(apiSources)
-      ]);
-
-      const anomalies = JSON.parse(stdout);
       
-      for (const anomaly of anomalies) {
-        await this.createAlert({
-          title: "API Usage Anomaly Detected",
-          description: anomaly.description,
-          severity: anomaly.severity,
-          source: anomaly.source,
-          status: "active"
-        });
+      // Simple anomaly detection without Python scripts
+      for (const source of apiSources) {
+        if (source.callsToday > 2000) { // Simple threshold
+          await this.createAlert({
+            title: "API Usage Anomaly Detected",
+            description: `${source.name} has unusually high activity: ${source.callsToday} calls today`,
+            severity: "warning",
+            source: source.name,
+            status: "active"
+          });
+        }
       }
     } catch (error) {
       console.error("Error detecting anomalies:", error);
@@ -158,22 +153,6 @@ export class MonitoringService {
       source: alert.source,
       timestamp: alert.timestamp || new Date()
     });
-    
-    // Send Slack notification for critical alerts
-    if (alert.severity === "critical") {
-      await sendSecurityAlert(alert.title, alert.description, alert.severity);
-    }
-
-    // Send email notification
-    const emailRecipients = process.env.SECURITY_EMAIL_RECIPIENTS?.split(",") || [];
-    if (emailRecipients.length > 0) {
-      await emailService.sendSecurityAlert(
-        emailRecipients,
-        alert.title,
-        alert.description,
-        alert.severity
-      );
-    }
 
     return alert;
   }
@@ -204,12 +183,7 @@ export class MonitoringService {
       summary: `Daily security monitoring report for ${today}`
     };
 
-    // Send report via email
-    const emailRecipients = process.env.SECURITY_EMAIL_RECIPIENTS?.split(",") || [];
-    if (emailRecipients.length > 0) {
-      await emailService.sendComplianceReport(emailRecipients, report);
-    }
-
+    console.log('Daily monitoring report generated:', report);
     return report;
   }
 }
