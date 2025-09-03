@@ -400,6 +400,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export incidents as CSV
+  app.get("/api/incidents/export", async (_req, res) => {
+    try {
+      const incidents = await storage.getIncidents();
+      
+      // Create CSV headers
+      const csvHeaders = ['Date', 'Severity', 'Description', 'Status', 'Source', 'ID', 'Resolved At'];
+      
+      // Create CSV rows
+      const csvRows = incidents.map(incident => [
+        new Date(incident.timestamp).toISOString(),
+        incident.severity,
+        `"${incident.description.replace(/"/g, '""')}"`, // Escape quotes
+        incident.status || 'open',
+        incident.source,
+        incident.id,
+        incident.resolvedAt ? new Date(incident.resolvedAt).toISOString() : ''
+      ]);
+      
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvRows.map(row => row.join(','))
+      ].join('\n');
+      
+      // Set headers for file download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="security_incidents_${new Date().toISOString().split('T')[0]}.csv"`);
+      
+      res.send(csvContent);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to export incidents" });
+    }
+  });
+
   app.post("/api/incidents", async (req, res) => {
     try {
       const validatedData = insertIncidentSchema.parse(req.body);

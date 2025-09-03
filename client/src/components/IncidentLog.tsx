@@ -102,8 +102,40 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
   const recentIncidents = incidents.slice(0, 5);
 
   const handleExportIncidents = () => {
-    // In a real implementation, this would generate and download a CSV/Excel file
-    console.log('Exporting incidents...');
+    try {
+      // Create CSV content
+      const csvHeaders = ['Date', 'Severity', 'Description', 'Status', 'Source', 'ID'];
+      const csvRows = incidents.map(incident => [
+        new Date(incident.timestamp).toLocaleString(),
+        incident.severity,
+        `"${incident.description.replace(/"/g, '""')}"`, // Escape quotes
+        incident.status,
+        incident.source,
+        incident.id
+      ]);
+      
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvRows.map(row => row.join(','))
+      ].join('\n');
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      link.setAttribute('href', url);
+      link.setAttribute('download', `security_incidents_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log(`Exported ${incidents.length} incidents to CSV`);
+    } catch (error) {
+      console.error('Error exporting incidents:', error);
+    }
   };
 
   return (
