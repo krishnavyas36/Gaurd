@@ -60,11 +60,11 @@ export default function Dashboard() {
       .catch(console.error);
   }, []);
 
-  // Update current time every minute
+  // Update current time every 5 seconds for visible refreshing
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(getCurrentESTString());
-    }, 60000); // Update every minute
+    }, 5000); // Update every 5 seconds for visible changes
 
     return () => clearInterval(timer);
   }, []);
@@ -291,7 +291,7 @@ export default function Dashboard() {
               
               {/* Current Time Display */}
               <div className="hidden sm:block text-right mr-4">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Current Time</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Current Time • Updates every 5s</p>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300" data-testid="current-time-est">
                   {currentTime}
                 </p>
@@ -338,7 +338,7 @@ export default function Dashboard() {
                   {isMonitoring ? 'System Online' : 'Monitoring Disabled'}
                 </div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">
-                  {dashboardData.stats.totalApiCalls} calls tracked today • EST
+                  {dashboardData.stats.totalApiCalls} calls tracked today • Refreshing every 30s • EST
                 </div>
               </div>
               <div className={`w-3 h-3 rounded-full ${
