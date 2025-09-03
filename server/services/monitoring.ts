@@ -37,7 +37,7 @@ export class MonitoringService {
     if (rateLimitRule && rateLimitRule.config) {
       const maxCalls = (rateLimitRule.config as any).maxCallsPerHour || 1000;
       
-      if (apiSource.callsToday > maxCalls) {
+      if ((apiSource.callsToday || 0) > maxCalls) {
         const alert = {
           title: "API Rate Limit Exceeded",
           description: `${apiSource.name} has exceeded the rate limit with ${apiSource.callsToday} calls`,
