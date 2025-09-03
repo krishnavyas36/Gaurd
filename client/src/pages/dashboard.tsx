@@ -263,6 +263,7 @@ export default function Dashboard() {
           apiSources={dashboardData.apiSources}
           activeAlerts={activeAlertCount}
           complianceScore={dashboardData.complianceScore}
+          isMonitoring={isMonitoring}
         />
 
         {/* Real-time Monitoring and Alerts */}

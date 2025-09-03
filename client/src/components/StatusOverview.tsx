@@ -6,9 +6,10 @@ interface StatusOverviewProps {
   apiSources: any[];
   activeAlerts: number;
   complianceScore: number;
+  isMonitoring: boolean;
 }
 
-export default function StatusOverview({ stats, apiSources, activeAlerts, complianceScore }: StatusOverviewProps) {
+export default function StatusOverview({ stats, apiSources, activeAlerts, complianceScore, isMonitoring }: StatusOverviewProps) {
   const activeSources = apiSources.filter(source => source.status === 'active').length;
   const totalApiCalls = stats?.totalApiCalls || 0;
   const sensitiveDataDetected = stats?.sensitiveDataDetected || 0;
@@ -21,18 +22,34 @@ export default function StatusOverview({ stats, apiSources, activeAlerts, compli
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">API Monitoring</p>
-              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400" data-testid="text-api-status">
-                Active
+              <p className={`text-xl font-bold ${
+                isMonitoring 
+                  ? 'text-emerald-600 dark:text-emerald-400' 
+                  : 'text-red-600 dark:text-red-400'
+              }`} data-testid="text-api-status">
+                {isMonitoring ? 'Active' : 'Disabled'}
               </p>
             </div>
-            <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
-              <Activity className="text-emerald-600 dark:text-emerald-400 h-4 w-4" />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              isMonitoring 
+                ? 'bg-emerald-100 dark:bg-emerald-900/30' 
+                : 'bg-red-100 dark:bg-red-900/30'
+            }`}>
+              <Activity className={`h-4 w-4 ${
+                isMonitoring 
+                  ? 'text-emerald-600 dark:text-emerald-400' 
+                  : 'text-red-600 dark:text-red-400'
+              }`} />
             </div>
           </div>
           <div className="mt-3">
             <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
-              <CheckCircle className="mr-1 h-3 w-3 text-emerald-500" />
-              <span data-testid="text-sources-monitored">{activeSources} sources monitored</span>
+              <CheckCircle className={`mr-1 h-3 w-3 ${
+                isMonitoring ? 'text-emerald-500' : 'text-red-500'
+              }`} />
+              <span data-testid="text-sources-monitored">
+                {isMonitoring ? `${activeSources} sources monitored` : 'Monitoring disabled'}
+              </span>
             </div>
           </div>
         </CardContent>
