@@ -60,6 +60,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getTodaysStats()
       ]);
 
+      // Calculate REAL total API calls from individual sources
+      const realTotalApiCalls = apiSources.reduce((total, source) => total + (source.callsToday || 0), 0);
+      
+      // Update stats with real totals
+      const correctedStats = {
+        ...todaysStats,
+        totalApiCalls: realTotalApiCalls
+      };
+
       const complianceScore = 85; // Simple fixed score
 
       const dashboardData = {
@@ -71,7 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dataClassifications,
           llmViolations,
           incidents,
-          stats: todaysStats,
+          stats: correctedStats,
           complianceScore
         }
       };
@@ -105,6 +114,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getTodaysStats()
       ]);
 
+      // Calculate REAL total API calls from individual sources
+      const realTotalApiCalls = apiSources.reduce((total, source) => total + (source.callsToday || 0), 0);
+      
+      // Update stats with real totals
+      const correctedStats = {
+        ...todaysStats,
+        totalApiCalls: realTotalApiCalls
+      };
+
       const complianceScore = 85; // Simple fixed score
 
       res.json({
@@ -114,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dataClassifications,
         llmViolations,
         incidents,
-        stats: todaysStats,
+        stats: correctedStats,
         complianceScore
       });
     } catch (error) {
