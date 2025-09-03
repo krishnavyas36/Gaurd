@@ -47,6 +47,9 @@ export class LLMScannerService {
   async scanResponse(response: LLMResponse): Promise<ScanResult> {
     const content = response.content.toLowerCase();
     
+    // Always increment scanned count for every response
+    await this.updateScannedCount();
+    
     // Check for financial advice violations
     const financialAdviceMatch = this.financialAdvicePatterns.some(pattern => 
       pattern.test(content)
@@ -188,16 +191,33 @@ export class LLMScannerService {
       });
     }
 
-    // Update daily stats
+    // Update daily stats for violations only (scanned count already updated)
     const today = new Date().toISOString().split('T')[0];
     const stats = await storage.getMonitoringStats(today);
     if (stats) {
       await storage.createOrUpdateMonitoringStats({
         ...stats,
-        llmResponsesScanned: (stats.llmResponsesScanned || 0) + 1,
         llmResponsesFlagged: (stats.llmResponsesFlagged || 0) + 1,
         llmResponsesBlocked: action === "blocked" ? (stats.llmResponsesBlocked || 0) + 1 : (stats.llmResponsesBlocked || 0)
       });
+    }
+  }
+
+  /**
+   * Update scanned count for every response processed
+   */
+  private async updateScannedCount() {
+    const today = new Date().toISOString().split('T')[0];
+    const stats = await storage.getMonitoringStats(today);
+    console.log(`📊 Updating LLM scanned count. Current: ${stats?.llmResponsesScanned || 0}`);
+    if (stats) {
+      const updatedStats = await storage.createOrUpdateMonitoringStats({
+        ...stats,
+        llmResponsesScanned: (stats.llmResponsesScanned || 0) + 1
+      });
+      console.log(`📊 LLM scanned count updated to: ${updatedStats?.llmResponsesScanned || 'unknown'}`);
+    } else {
+      console.log(`⚠️ No monitoring stats found for ${today}`);
     }
   }
 

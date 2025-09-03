@@ -1060,12 +1060,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
+      console.log(`🔍 Processing LLM request: ${prompt.substring(0, 50)}...`);
+
       // Simulate LLM response for demo purposes
       const llmResponse = {
         content: `Demo response for: ${prompt}`,
         model: "gpt-4",
         usage: { tokens: 100 }
       };
+
+      console.log(`🤖 LLM response generated, now scanning for security...`);
 
       // Automatically scan the response
       const scanResult = await llmScannerService.scanResponse({
@@ -1077,6 +1081,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           generatedAt: new Date().toISOString()
         }
       });
+
+      console.log(`✅ LLM security scan completed. Violation: ${scanResult.isViolation}, Action: ${scanResult.action}`);
 
       res.json({
         original: llmResponse,
