@@ -1,9 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Settings, AlertTriangle, Shield, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Settings, AlertTriangle, Shield, Eye, FileText, TestTube } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useState } from "react";
 
 interface LLMResponseMonitorProps {
   violations: any[];
@@ -12,10 +15,35 @@ interface LLMResponseMonitorProps {
 
 export default function LLMResponseMonitor({ violations, stats }: LLMResponseMonitorProps) {
   const queryClient = useQueryClient();
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [scanSettings, setScanSettings] = useState({
+    enableFinancialAdviceDetection: true,
+    enablePIIDetection: true,
+    enableUnverifiedDataDetection: true,
+    autoBlockViolations: true,
+    realtimeScanning: true
+  });
 
   const scanResponse = useMutation({
     mutationFn: async (content: string) => {
       return apiRequest('POST', '/api/llm/scan', { content });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+    }
+  });
+
+  const testLLMResponse = useMutation({
+    mutationFn: async (testType: string) => {
+      const testPrompts = {
+        financial: "You should invest all your money in Bitcoin right now for guaranteed returns!",
+        pii: "Here's my social security number: 123-45-6789 and credit card: 4532-1234-5678-9012",
+        unverified: "According to my insider sources, this company will announce major news tomorrow"
+      };
+      return apiRequest('POST', '/api/llm/generate', { 
+        prompt: testPrompts[testType as keyof typeof testPrompts], 
+        type: 'test' 
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
@@ -84,15 +112,140 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">LLM Response Monitor</h2>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center space-x-2"
-            data-testid="button-configure-scanning"
-          >
-            <Settings className="h-4 w-4" />
-            <span>Configure</span>
-          </Button>
+          <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center space-x-2"
+                data-testid="button-configure-scanning"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Configure</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>LLM Scanner Configuration</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 pt-4">
+                {/* Scanning Settings */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-slate-900 dark:text-white">Detection Settings</h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        <span className="text-sm">Financial Advice Detection</span>
+                      </div>
+                      <Switch
+                        checked={scanSettings.enableFinancialAdviceDetection}
+                        onCheckedChange={(checked) => 
+                          setScanSettings(prev => ({ ...prev, enableFinancialAdviceDetection: checked }))
+                        }
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="h-4 w-4 text-orange-500" />
+                        <span className="text-sm">PII Detection</span>
+                      </div>
+                      <Switch
+                        checked={scanSettings.enablePIIDetection}
+                        onCheckedChange={(checked) => 
+                          setScanSettings(prev => ({ ...prev, enablePIIDetection: checked }))
+                        }
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm">Unverified Data Detection</span>
+                      </div>
+                      <Switch
+                        checked={scanSettings.enableUnverifiedDataDetection}
+                        onCheckedChange={(checked) => 
+                          setScanSettings(prev => ({ ...prev, enableUnverifiedDataDetection: checked }))
+                        }
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Shield className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">Auto-block Violations</span>
+                      </div>
+                      <Switch
+                        checked={scanSettings.autoBlockViolations}
+                        onCheckedChange={(checked) => 
+                          setScanSettings(prev => ({ ...prev, autoBlockViolations: checked }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Test Functions */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-slate-900 dark:text-white">Test Scanner</h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testLLMResponse.mutate('financial')}
+                      disabled={testLLMResponse.isPending}
+                      className="flex items-center space-x-2"
+                    >
+                      <TestTube className="h-4 w-4" />
+                      <span>Test Financial Advice Detection</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testLLMResponse.mutate('pii')}
+                      disabled={testLLMResponse.isPending}
+                      className="flex items-center space-x-2"
+                    >
+                      <TestTube className="h-4 w-4" />
+                      <span>Test PII Detection</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => testLLMResponse.mutate('unverified')}
+                      disabled={testLLMResponse.isPending}
+                      className="flex items-center space-x-2"
+                    >
+                      <TestTube className="h-4 w-4" />
+                      <span>Test Unverified Data Detection</span>
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsConfigOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Here you could save settings to backend
+                      setIsConfigOpen(false);
+                    }}
+                  >
+                    Save Settings
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       <CardContent className="p-6">
