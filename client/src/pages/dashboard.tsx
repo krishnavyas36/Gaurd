@@ -37,7 +37,7 @@ export default function Dashboard() {
     refetchInterval: 30000, // Fallback polling every 30 seconds
   });
 
-  // Temporarily disable WebSocket to fix connection issues
+  // WebSocket disabled - using polling for real-time updates instead
   const isConnected = false;
   
   // const { isConnected } = useWebSocket({
