@@ -27,6 +27,8 @@ interface DashboardData {
 export default function Dashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [activeAlertCount, setActiveAlertCount] = useState(0);
+  const [isMonitoring, setIsMonitoring] = useState(true);
+  const [isToggling, setIsToggling] = useState(false);
 
   const { data: initialData, isLoading } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
@@ -59,6 +61,35 @@ export default function Dashboard() {
       setActiveAlertCount(initialData.alerts.filter(alert => alert.status === 'active').length);
     }
   }, [initialData]);
+
+  // Fetch monitoring status on component mount
+  useEffect(() => {
+    fetch('/api/monitoring/status')
+      .then(response => response.json())
+      .then(data => setIsMonitoring(data.monitoring_enabled))
+      .catch(console.error);
+  }, []);
+
+  // Toggle monitoring function
+  const toggleMonitoring = async () => {
+    setIsToggling(true);
+    try {
+      const response = await fetch('/api/monitoring/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: !isMonitoring })
+      });
+      
+      if (response.ok) {
+        setIsMonitoring(!isMonitoring);
+        console.log(`Monitoring ${!isMonitoring ? 'enabled' : 'disabled'}`);
+      }
+    } catch (error) {
+      console.error('Failed to toggle monitoring:', error);
+    } finally {
+      setIsToggling(false);
+    }
+  };
 
   useEffect(() => {
     if (dashboardData) {
@@ -96,6 +127,20 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Monitoring Toggle */}
+              <Button
+                onClick={toggleMonitoring}
+                disabled={isToggling}
+                className={`${
+                  isMonitoring 
+                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white' 
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                } text-sm px-4 py-2 transition-colors`}
+                data-testid="button-monitoring-toggle"
+              >
+                {isToggling ? 'Updating...' : (isMonitoring ? 'Monitoring ON' : 'Monitoring OFF')}
+              </Button>
+              
               {/* Connection Status */}
               <div className="flex items-center space-x-2 text-sm">
                 <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-slate-400'}`}></div>
@@ -155,10 +200,20 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400">System Online</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">{dashboardData.stats.totalApiCalls} calls tracked today</div>
+                <div className={`text-sm font-medium ${
+                  isMonitoring 
+                    ? 'text-emerald-600 dark:text-emerald-400' 
+                    : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {isMonitoring ? 'System Online' : 'Monitoring Disabled'}
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  {dashboardData.stats.totalApiCalls} calls tracked today
+                </div>
               </div>
-              <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+              <div className={`w-3 h-3 rounded-full ${
+                isMonitoring ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'
+              }`}></div>
             </div>
           </div>
         </div>

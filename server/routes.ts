@@ -473,6 +473,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Monitoring and Analytics
+  let isMonitoringEnabled = true; // Global monitoring state
+
   app.get("/api/monitoring/stats", async (req, res) => {
     try {
       const date = req.query.date as string;
@@ -480,6 +482,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch monitoring stats" });
+    }
+  });
+
+  // Monitoring toggle endpoint
+  app.post("/api/monitoring/toggle", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      isMonitoringEnabled = enabled;
+      
+      console.log(`🔧 Monitoring ${enabled ? 'ENABLED' : 'DISABLED'} by user`);
+      
+      // Broadcast monitoring state change
+      broadcastToAllClients({ 
+        type: 'monitoring_toggled', 
+        enabled: isMonitoringEnabled,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.json({ 
+        success: true, 
+        monitoring_enabled: isMonitoringEnabled,
+        message: `Monitoring ${enabled ? 'enabled' : 'disabled'}`,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to toggle monitoring" });
+    }
+  });
+
+  // Get monitoring status
+  app.get("/api/monitoring/status", async (_req, res) => {
+    try {
+      res.json({ 
+        monitoring_enabled: isMonitoringEnabled,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get monitoring status" });
     }
   });
 
