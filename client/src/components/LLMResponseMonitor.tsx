@@ -124,7 +124,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                 <span>Configure</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl backdrop-blur-sm">
               <DialogHeader>
                 <DialogTitle>LLM Scanner Configuration</DialogTitle>
               </DialogHeader>
