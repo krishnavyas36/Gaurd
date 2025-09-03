@@ -6,6 +6,7 @@ import { Download, AlertCircle, AlertTriangle, Info, ExternalLink, X } from "luc
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useState } from "react";
+import { formatTimeAgoEST, formatFullDateTimeEST } from "@/lib/timeUtils";
 
 interface IncidentLogProps {
   incidents: any[];
@@ -47,19 +48,7 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
   });
 
   const formatTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const incidentTime = new Date(timestamp);
-    const diffMs = now.getTime() - incidentTime.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+    return formatTimeAgoEST(timestamp);
   };
 
   const getSeverityIcon = (severity: string) => {

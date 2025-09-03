@@ -13,6 +13,7 @@ import { discordService } from "./services/discordService";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { registerApiTrackingRoutes } from "./routes/apiTracking";
+import { formatDateTimeEST, getCurrentESTTimestamp } from "./utils/timeUtils";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -509,7 +510,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       res.json({ 
         monitoring_enabled: isMonitoringEnabled,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        timestamp_est: formatDateTimeEST(),
+        timezone: 'America/New_York'
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to get monitoring status" });
@@ -523,6 +526,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const scanResults = {
         timestamp: new Date().toISOString(),
+        timestamp_est: formatDateTimeEST(),
+        timezone: 'America/New_York',
         scanned_items: 0,
         vulnerabilities_found: 0,
         new_alerts: 0,
@@ -649,7 +654,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'Monitoring data processed',
         result: monitoringResult,
         compliance: complianceCheck,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        timestamp_est: formatDateTimeEST()
       });
     } catch (error) {
       console.error('Error processing monitoring data:', error);
@@ -681,7 +687,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactions,
         count: transactions.length,
         date_range: `${start_date} to ${end_date}`,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        timestamp_est: formatDateTimeEST()
       });
     } catch (error) {
       console.error('Error pulling Plaid transactions:', error);
@@ -709,7 +716,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true, 
         accounts,
         count: accounts.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        timestamp_est: formatDateTimeEST()
       });
     } catch (error) {
       console.error('Error pulling Plaid accounts:', error);

@@ -55,6 +55,12 @@ Comprehensive documentation has been created covering all system components, sec
 - **Compliance Standards**: Implementation of GDPR, SOC2, PCI DSS, and financial services regulations
 
 ## Recent Changes (2025-09-03)
+- **TIMEZONE CONVERSION TO EST COMPLETE**: All timestamps now display in Eastern Time (EST/EDT)
+  - Created comprehensive time utilities for both frontend and backend EST conversion
+  - Updated all API endpoints to return both UTC and EST timestamps 
+  - Enhanced dashboard with real-time EST clock that updates every minute
+  - Modified all time display components (alerts, incidents, monitoring status) to use EST
+  - Added timezone indicators throughout the UI showing "EST" for user clarity
 - **WEBSOCKET & ERROR RESOLUTION COMPLETE**: Fixed DOMException errors and WebSocket connection issues
 - **LLM Response Monitor Fix**: Resolved data inconsistency between API call tracking (8 calls) and LLM scanner (now properly showing scanned responses)
 - **TypeScript Compilation Errors**: Fixed Date handling and missing service references in routes.ts

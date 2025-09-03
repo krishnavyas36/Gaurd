@@ -14,6 +14,7 @@ import ComplianceRules from "@/components/ComplianceRules";
 import DataClassification from "@/components/DataClassification";
 import LLMResponseMonitor from "@/components/LLMResponseMonitor";
 import IncidentLog from "@/components/IncidentLog";
+import { formatTimeAgoEST, formatFullDateTimeEST, getCurrentESTString } from "@/lib/timeUtils";
 
 interface DashboardData {
   apiSources: any[];
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [isScanning, setIsScanning] = useState(false);
   const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(getCurrentESTString());
 
   const { data: initialData, isLoading } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
@@ -56,6 +58,15 @@ export default function Dashboard() {
       .then(response => response.json())
       .then(data => setIsMonitoring(data.monitoring_enabled))
       .catch(console.error);
+  }, []);
+
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(getCurrentESTString());
+    }, 60000); // Update every minute
+
+    return () => clearInterval(timer);
   }, []);
 
   // Toggle monitoring function
@@ -110,19 +121,7 @@ export default function Dashboard() {
   }, [dashboardData]);
 
   const formatAlertTime = (timestamp: string) => {
-    const now = new Date();
-    const alertTime = new Date(timestamp);
-    const diffMs = now.getTime() - alertTime.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-    
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    return formatTimeAgoEST(timestamp);
   };
 
   const getAlertSeverityColor = (severity: string) => {
@@ -290,6 +289,14 @@ export default function Dashboard() {
                 </Dialog>
               </div>
               
+              {/* Current Time Display */}
+              <div className="hidden sm:block text-right mr-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Current Time</p>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300" data-testid="current-time-est">
+                  {currentTime}
+                </p>
+              </div>
+
               {/* User Profile */}
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-sm">
@@ -331,7 +338,7 @@ export default function Dashboard() {
                   {isMonitoring ? 'System Online' : 'Monitoring Disabled'}
                 </div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">
-                  {dashboardData.stats.totalApiCalls} calls tracked today
+                  {dashboardData.stats.totalApiCalls} calls tracked today • EST
                 </div>
               </div>
               <div className={`w-3 h-3 rounded-full ${
