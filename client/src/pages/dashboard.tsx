@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Bell, User, Filter, Settings, Shield, Activity } from "lucide-react";
+import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import WalletGydeLogo from "@/components/WalletGydeLogo";
 import StatusOverview from "@/components/StatusOverview";
@@ -29,6 +29,8 @@ export default function Dashboard() {
   const [activeAlertCount, setActiveAlertCount] = useState(0);
   const [isMonitoring, setIsMonitoring] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
 
   const { data: initialData, isLoading } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
@@ -91,6 +93,30 @@ export default function Dashboard() {
     }
   };
 
+  // Quick security scan function
+  const performQuickScan = async () => {
+    setIsScanning(true);
+    try {
+      const response = await fetch('/api/security/quick-scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setLastScanTime(new Date());
+        console.log('Quick scan completed:', result);
+        
+        // Refresh dashboard data after scan
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Failed to perform quick scan:', error);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   useEffect(() => {
     if (dashboardData) {
       setActiveAlertCount(dashboardData.alerts.filter(alert => alert.status === 'active').length);
@@ -127,6 +153,17 @@ export default function Dashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Quick Scan Button */}
+              <Button
+                onClick={performQuickScan}
+                disabled={isScanning}
+                className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 transition-colors flex items-center space-x-2"
+                data-testid="button-quick-scan"
+              >
+                <Zap className="h-4 w-4" />
+                <span>{isScanning ? 'Scanning...' : 'Quick Scan'}</span>
+              </Button>
+
               {/* Monitoring Toggle */}
               <Button
                 onClick={toggleMonitoring}

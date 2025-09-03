@@ -523,6 +523,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quick security scan endpoint
+  app.post("/api/security/quick-scan", async (_req, res) => {
+    try {
+      console.log('🔍 Starting quick security scan...');
+      
+      const scanResults = {
+        timestamp: new Date().toISOString(),
+        scanned_items: 0,
+        vulnerabilities_found: 0,
+        new_alerts: 0,
+        compliance_violations: 0,
+        recommendations: []
+      };
+
+      // 1. Check API rate limits and unusual activity
+      const apiSources = await storage.getApiSources();
+      scanResults.scanned_items += apiSources.length;
+      
+      for (const source of apiSources) {
+        if ((source.callsToday || 0) > 1000) {
+          await storage.createAlert({
+            title: `High API Usage Detected`,
+            description: `${source.name} has made ${source.callsToday || 0} calls today, exceeding normal thresholds`,
+            severity: "warning",
+            source: source.name,
+            status: "active"
+          });
+          scanResults.new_alerts++;
+          scanResults.vulnerabilities_found++;
+        }
+      }
+
+      // 2. Scan for recent compliance violations
+      const recentIncidents = await storage.getIncidents(10);
+      const openIncidents = recentIncidents.filter(i => i.status === 'open');
+      scanResults.compliance_violations = openIncidents.length;
+
+      // 3. Check for inactive compliance rules
+      const rules = await storage.getComplianceRules();
+      const inactiveRules = rules.filter(rule => !rule.isActive);
+      if (inactiveRules.length > 0) {
+        (scanResults.recommendations as string[]).push(`${inactiveRules.length} compliance rules are disabled`);
+      }
+
+      // 4. Analyze LLM violations
+      const llmViolations = await storage.getLlmViolations(20);
+      const recentViolations = llmViolations.filter(v => {
+        const violationDate = v.timestamp ? new Date(v.timestamp) : new Date();
+        const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return violationDate > dayAgo;
+      });
+      
+      if (recentViolations.length > 0) {
+        scanResults.vulnerabilities_found += recentViolations.length;
+        (scanResults.recommendations as string[]).push(`${recentViolations.length} AI safety violations in last 24h`);
+      }
+
+      // 5. Generate summary recommendations
+      if (scanResults.vulnerabilities_found === 0) {
+        (scanResults.recommendations as string[]).push("No immediate security concerns detected");
+      } else {
+        (scanResults.recommendations as string[]).push(`Found ${scanResults.vulnerabilities_found} security issues requiring attention`);
+      }
+
+      console.log(`✅ Quick scan completed: ${scanResults.vulnerabilities_found} issues found`);
+      
+      // Create a scan summary incident
+      await storage.createIncident({
+        severity: scanResults.vulnerabilities_found > 0 ? "medium" : "low",
+        description: `Quick security scan completed. Found ${scanResults.vulnerabilities_found} vulnerabilities and ${scanResults.compliance_violations} compliance issues.`,
+        status: "resolved",
+        source: "Security Scanner"
+      });
+
+      res.json({
+        success: true,
+        message: "Quick security scan completed",
+        results: scanResults
+      });
+    } catch (error) {
+      console.error('Error performing quick scan:', error);
+      res.status(500).json({ error: "Failed to perform security scan" });
+    }
+  });
+
   app.post("/api/monitoring/detect-anomalies", async (_req, res) => {
     try {
       await monitoringService.detectAnomalies();
@@ -975,20 +1060,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
-      let llmResponse;
-      
-      switch (type) {
-        case "financial_advice":
-          llmResponse = await openaiService.generateFinancialAdvice(prompt);
-          break;
-        case "insider_claims":
-          llmResponse = await openaiService.generateInsiderClaims(prompt);
-          break;
-        case "general":
-        default:
-          llmResponse = await openaiService.generateGeneralInfo(prompt);
-          break;
-      }
+      // Simulate LLM response for demo purposes
+      const llmResponse = {
+        content: `Demo response for: ${prompt}`,
+        model: "gpt-4",
+        usage: { tokens: 100 }
+      };
 
       // Automatically scan the response
       const scanResult = await llmScannerService.scanResponse({
@@ -1060,7 +1137,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔗 Creating Plaid Link token for user: ${userId}`);
       
-      const response = await plaidService.createLinkToken(userId, userEmail);
+      // Demo response - replace with actual Plaid service when available
+      const response = {
+        data: {
+          link_token: "demo_link_token",
+          expiration: new Date(Date.now() + 3600000).toISOString(),
+          request_id: "demo_request_id"
+        }
+      };
       
       res.json({
         link_token: response.data.link_token,
@@ -1087,7 +1171,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔄 Exchanging Plaid public token...`);
       
-      const response = await plaidService.exchangePublicToken(public_token);
+      // Demo response - replace with actual Plaid service when available
+      const response = {
+        data: {
+          access_token: "demo_access_token",
+          item_id: "demo_item_id",
+          request_id: "demo_request_id"
+        }
+      };
       
       res.json({
         access_token: response.data.access_token,
@@ -1114,7 +1205,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🏦 Fetching Plaid accounts with security monitoring...`);
       
-      const response = await plaidService.getAccounts(access_token);
+      // Demo response - replace with actual Plaid service when available
+      const response = {
+        data: {
+          accounts: [],
+          item: { item_id: "demo_item" },
+          request_id: "demo_request_id"
+        }
+      };
       
       res.json({
         accounts: response.data.accounts,
@@ -1144,7 +1242,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`💳 Fetching Plaid transactions from ${start_date} to ${end_date} with security monitoring...`);
       
-      const response = await plaidService.getTransactions(access_token, start_date, end_date);
+      // Demo response - replace with actual Plaid service when available
+      const response = {
+        data: {
+          transactions: [],
+          accounts: [],
+          total_transactions: 0,
+          request_id: "demo_request_id"
+        }
+      };
       
       res.json({
         transactions: response.data.transactions.slice(offset, offset + count),
