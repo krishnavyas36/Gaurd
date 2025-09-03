@@ -20,16 +20,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket setup for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   
-  wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket');
-    
-    ws.on('close', () => {
-      console.log('Client disconnected from WebSocket');
-    });
-
-    // Send initial data
-    sendDashboardUpdate(ws);
-  });
+  // WebSocket connections disabled to prevent DOMException errors
+  // System now uses polling for reliable real-time updates
+  console.log('WebSocket server created but connections disabled - using polling for updates');
 
   // Broadcast function for real-time updates
   function broadcastToAllClients(data: any) {
