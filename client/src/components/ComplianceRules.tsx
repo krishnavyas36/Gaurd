@@ -81,18 +81,33 @@ export default function ComplianceRules({ rules }: ComplianceRulesProps) {
                   </Badge>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-xs text-slate-600 dark:text-slate-400">
-                      {rule.isActive ? 'On' : 'Off'}
-                    </span>
-                    <Switch
-                      checked={rule.isActive}
-                      onCheckedChange={() => toggleRule.mutate({ id: rule.id, isActive: rule.isActive })}
-                      disabled={toggleRule.isPending}
-                      data-testid={`switch-toggle-rule-${index}`}
-                      className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-slate-300"
+                  <button
+                    onClick={() => toggleRule.mutate({ id: rule.id, isActive: rule.isActive })}
+                    disabled={toggleRule.isPending}
+                    data-testid={`button-toggle-rule-${index}`}
+                    className={`
+                      relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50
+                      ${rule.isActive 
+                        ? 'bg-emerald-600 hover:bg-emerald-700' 
+                        : 'bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500'
+                      }
+                    `}
+                  >
+                    <span className="sr-only">Toggle rule</span>
+                    <span
+                      className={`
+                        inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                        ${rule.isActive ? 'translate-x-6' : 'translate-x-1'}
+                      `}
                     />
-                  </div>
+                  </button>
+                  <span className={`text-xs font-medium ${
+                    rule.isActive 
+                      ? 'text-emerald-600 dark:text-emerald-400' 
+                      : 'text-slate-600 dark:text-slate-400'
+                  }`}>
+                    {rule.isActive ? 'ON' : 'OFF'}
+                  </span>
                 </div>
               </div>
               
