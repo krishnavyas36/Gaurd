@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap } from "lucide-react";
+import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import WalletGydeLogo from "@/components/WalletGydeLogo";
 import StatusOverview from "@/components/StatusOverview";
 import APIActivityMonitor from "@/components/APIActivityMonitor";
@@ -31,6 +33,7 @@ export default function Dashboard() {
   const [isToggling, setIsToggling] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
   const { data: initialData, isLoading } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
@@ -123,6 +126,32 @@ export default function Dashboard() {
     }
   }, [dashboardData]);
 
+  const formatAlertTime = (timestamp: string) => {
+    const now = new Date();
+    const alertTime = new Date(timestamp);
+    const diffMs = now.getTime() - alertTime.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+  };
+
+  const getAlertSeverityColor = (severity: string) => {
+    switch (severity?.toLowerCase()) {
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
   if (isLoading || !dashboardData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -188,22 +217,91 @@ export default function Dashboard() {
                 </span>
               </div>
               
-              {/* Alert Counter */}
+              {/* Alert Counter with Dropdown */}
               <div className="relative">
-                <button 
-                  className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800" 
-                  data-testid="button-notifications"
-                >
-                  <Bell className="h-5 w-5" />
-                  {activeAlertCount > 0 && (
-                    <span 
-                      className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
-                      data-testid="text-alert-count"
+                <Dialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+                  <DialogTrigger asChild>
+                    <button 
+                      className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800" 
+                      data-testid="button-notifications"
                     >
-                      {activeAlertCount}
-                    </span>
-                  )}
-                </button>
+                      <Bell className="h-5 w-5" />
+                      {activeAlertCount > 0 && (
+                        <span 
+                          className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
+                          data-testid="text-alert-count"
+                        >
+                          {activeAlertCount}
+                        </span>
+                      )}
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center space-x-2">
+                        <Bell className="h-5 w-5" />
+                        <span>Security Alerts ({activeAlertCount})</span>
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 max-h-96 overflow-y-auto">
+                      {dashboardData.alerts.filter(alert => alert.status === 'active').length === 0 ? (
+                        <div className="text-center py-8 text-slate-500">
+                          <Bell className="h-12 w-12 text-slate-300 mx-auto mb-2" />
+                          <p>No active alerts</p>
+                          <p className="text-sm">Your security monitoring is working properly</p>
+                        </div>
+                      ) : (
+                        dashboardData.alerts
+                          .filter(alert => alert.status === 'active')
+                          .slice(0, 10)
+                          .map((alert, index) => (
+                            <div 
+                              key={alert.id || index} 
+                              className="border border-slate-200 dark:border-slate-600 rounded-lg p-4 space-y-2"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2 mb-1">
+                                    <Badge 
+                                      className={getAlertSeverityColor(alert.severity)}
+                                    >
+                                      {alert.severity?.toUpperCase() || 'UNKNOWN'}
+                                    </Badge>
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                                      {formatAlertTime(alert.timestamp)}
+                                    </span>
+                                  </div>
+                                  <h4 className="font-medium text-slate-900 dark:text-white text-sm">
+                                    {alert.title || alert.type || 'Security Alert'}
+                                  </h4>
+                                  <p className="text-sm text-slate-600 dark:text-slate-300 mt-1">
+                                    {alert.description || alert.message || 'Security incident detected'}
+                                  </p>
+                                  {alert.apiSource && (
+                                    <div className="flex items-center space-x-1 mt-2">
+                                      <span className="text-xs text-slate-500">Source:</span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {alert.apiSource}
+                                      </Badge>
+                                    </div>
+                                  )}
+                                </div>
+                                <AlertTriangle className="h-4 w-4 text-orange-500 mt-1" />
+                              </div>
+                            </div>
+                          ))
+                      )}
+                      
+                      {dashboardData.alerts.filter(alert => alert.status === 'active').length > 10 && (
+                        <div className="text-center py-2">
+                          <Button variant="outline" size="sm">
+                            View All Alerts
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
               
               {/* User Profile */}
