@@ -74,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalApiCalls: realTotalApiCalls,
         alertsGenerated: alerts.length,
         sensitiveDataDetected: dataClassifications.length,
-        llmResponsesScanned: llmViolations.length > 0 ? 100 : 0,
+        llmResponsesScanned: todaysStats?.llmResponsesScanned || 0,
         llmResponsesFlagged: llmViolations.length,
         llmResponsesBlocked: llmViolations.filter(v => v.action === 'blocked').length,
         complianceScore: calculatedComplianceScore
@@ -137,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalApiCalls: realTotalApiCalls,
         alertsGenerated: alerts.length,
         sensitiveDataDetected: dataClassifications.length,
-        llmResponsesScanned: llmViolations.length > 0 ? 100 : 0, // Estimate based on violations
+        llmResponsesScanned: todaysStats?.llmResponsesScanned || 0,
         llmResponsesFlagged: llmViolations.length,
         llmResponsesBlocked: llmViolations.filter(v => v.action === 'blocked').length,
         complianceScore: calculatedComplianceScore
