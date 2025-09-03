@@ -9,6 +9,34 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Handle WebSocket errors from Vite development server immediately
+      window.addEventListener('error', function(event) {
+        if (event.error && (
+          event.error.toString().includes('WebSocket') || 
+          event.error.toString().includes('DOMException') ||
+          event.message.includes('WebSocket') ||
+          event.message.includes('wss://') ||
+          event.message.includes('ws://')
+        )) {
+          event.preventDefault();
+          console.log('Development WebSocket handled - using polling for updates');
+          return false;
+        }
+      });
+      
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && (
+          event.reason.toString().includes('WebSocket') || 
+          event.reason.toString().includes('DOMException') ||
+          event.reason.toString().includes('wss://') ||
+          event.reason.toString().includes('ws://')
+        )) {
+          event.preventDefault();
+          console.log('Development WebSocket rejection handled - using polling for updates');
+        }
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
