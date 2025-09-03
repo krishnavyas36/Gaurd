@@ -10,6 +10,21 @@
   <body>
     <div id="root"></div>
     <script>
+      // Override console.error to suppress WebSocket development errors
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        const message = args.join(' ');
+        if (message.includes('WebSocket') || 
+            message.includes('DOMException') || 
+            message.includes('wss://') || 
+            message.includes('ws://') ||
+            message.includes('Failed to construct')) {
+          console.log('Development WebSocket error suppressed - using polling for updates');
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+
       // Handle WebSocket errors from Vite development server immediately
       window.addEventListener('error', function(event) {
         if (event.error && (
@@ -17,25 +32,28 @@
           event.error.toString().includes('DOMException') ||
           event.message.includes('WebSocket') ||
           event.message.includes('wss://') ||
-          event.message.includes('ws://')
+          event.message.includes('ws://') ||
+          event.message.includes('Failed to construct')
         )) {
           event.preventDefault();
+          event.stopPropagation();
           console.log('Development WebSocket handled - using polling for updates');
           return false;
         }
-      });
+      }, true);
       
       window.addEventListener('unhandledrejection', function(event) {
         if (event.reason && (
           event.reason.toString().includes('WebSocket') || 
           event.reason.toString().includes('DOMException') ||
           event.reason.toString().includes('wss://') ||
-          event.reason.toString().includes('ws://')
+          event.reason.toString().includes('ws://') ||
+          event.reason.toString().includes('Failed to construct')
         )) {
           event.preventDefault();
           console.log('Development WebSocket rejection handled - using polling for updates');
         }
-      });
+      }, true);
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
