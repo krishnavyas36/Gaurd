@@ -78,49 +78,36 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background" data-testid="security-dashboard">
-      {/* Header Navigation */}
-      <header className="bg-slate-800 shadow-sm">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900" data-testid="security-dashboard">
+      {/* Clean Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm dark:bg-slate-900/80 dark:border-slate-700/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-4">
-                <WalletGydeLogo variant="light" data-testid="logo" />
-                <h1 className="text-xl font-semibold text-white" data-testid="app-title">
-                  Security Agent
-                </h1>
+              <div className="flex items-center space-x-3">
+                <WalletGydeLogo variant="dark" data-testid="logo" />
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900 dark:text-white" data-testid="app-title">
+                    WalletGyde
+                  </h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Security Agent</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              {/* Connection Status */}
+              <div className="flex items-center space-x-2 text-sm">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-slate-400'}`}></div>
+                <span className="text-slate-600 dark:text-slate-400">
+                  {isConnected ? 'Live' : 'Polling'}
+                </span>
               </div>
               
-              {/* Navigation Menu */}
-              <nav className="flex items-center space-x-1 ml-8">
-                <Link href="/">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-gray-300 hover:text-white hover:bg-slate-700"
-                    data-testid="nav-dashboard"
-                  >
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link href="/compliance">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-gray-300 hover:text-white hover:bg-slate-700"
-                    data-testid="nav-compliance"
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Compliance Filtering
-                  </Button>
-                </Link>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
               {/* Alert Counter */}
               <div className="relative">
                 <button 
-                  className="p-2 text-gray-300 hover:text-white transition-colors" 
+                  className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800" 
                   data-testid="button-notifications"
                 >
                   <Bell className="h-5 w-5" />
@@ -136,21 +123,16 @@ export default function Dashboard() {
               </div>
               
               {/* User Profile */}
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-                  <User className="text-white text-sm" />
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-sm">
+                  <User className="text-white w-4 h-4" />
                 </div>
-                <span className="text-sm font-medium text-gray-200" data-testid="text-username">
-                  Security Admin
-                </span>
-              </div>
-
-              {/* Connection Status */}
-              <div className="flex items-center space-x-2">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-red-400'}`}></div>
-                <span className="text-xs text-gray-300" data-testid="text-connection-status">
-                  {isConnected ? 'Live' : 'Offline'}
-                </span>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white" data-testid="text-username">
+                    Security Admin
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
+                </div>
               </div>
             </div>
           </div>
@@ -158,51 +140,25 @@ export default function Dashboard() {
       </header>
 
       {/* Main Dashboard Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Monitoring Status Banner */}
-        <div className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Clean Status Banner */}
+        <div className="mb-6 p-4 bg-white/70 backdrop-blur-sm border border-slate-200/60 rounded-xl shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Shield className="h-6 w-6 text-blue-600" />
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
+                <Shield className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-blue-900">Security Monitoring Status</h2>
-                <p className="text-blue-700">Ready to protect your financial applications with real-time monitoring</p>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">API Security Monitoring</h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Real-time tracking active with {dashboardData.apiSources.length} API sources</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-right">
-                <div className="text-sm text-blue-600 font-medium">Status: Inactive</div>
-                <div className="text-xs text-blue-500">Click to activate monitoring</div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right hidden sm:block">
+                <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400">System Online</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">{dashboardData.stats.totalApiCalls} calls tracked today</div>
               </div>
-              <Link href="/monitoring-control">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6" data-testid="button-activate-monitoring">
-                  <Activity className="h-4 w-4 mr-2" />
-                  Activate Monitoring
-                </Button>
-              </Link>
-            </div>
-          </div>
-          
-          {/* Quick Actions */}
-          <div className="mt-4 pt-4 border-t border-blue-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-blue-700">
-                <strong>Quick Start:</strong> Activate monitoring → Test with sample data → View real-time alerts
-              </div>
-              <div className="flex space-x-2">
-                <Link href="/advanced-compliance">
-                  <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-                    Test Scanner
-                  </Button>
-                </Link>
-                <Link href="/alerts">
-                  <Button variant="outline" size="sm" className="border-blue-300 text-blue-700 hover:bg-blue-50">
-                    View Alerts
-                  </Button>
-                </Link>
-              </div>
+              <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
             </div>
           </div>
         </div>

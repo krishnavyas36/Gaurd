@@ -14,53 +14,49 @@ export default function StatusOverview({ stats, apiSources, activeAlerts, compli
   const sensitiveDataDetected = stats?.sensitiveDataDetected || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-testid="status-overview">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-testid="status-overview">
       {/* API Monitoring Status */}
-      <Card className="border border-gray-200">
-        <CardContent className="p-6">
+      <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">API Monitoring</p>
-              <p className="text-2xl font-semibold text-secondary" data-testid="text-api-status">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">API Monitoring</p>
+              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400" data-testid="text-api-status">
                 Active
               </p>
             </div>
-            <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-              <Activity className="text-secondary h-5 w-5" />
+            <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+              <Activity className="text-emerald-600 dark:text-emerald-400 h-4 w-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm text-gray-600">
-              <span className="flex items-center text-secondary">
-                <CheckCircle className="mr-1 h-4 w-4" />
-                <span data-testid="text-sources-monitored">{activeSources} sources monitored</span>
-              </span>
+          <div className="mt-3">
+            <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
+              <CheckCircle className="mr-1 h-3 w-3 text-emerald-500" />
+              <span data-testid="text-sources-monitored">{activeSources} sources monitored</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Active Alerts */}
-      <Card className="border border-gray-200">
-        <CardContent className="p-6">
+      <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Active Alerts</p>
-              <p className="text-2xl font-semibold text-error" data-testid="text-active-alerts">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Active Alerts</p>
+              <p className="text-xl font-bold text-orange-600 dark:text-orange-400" data-testid="text-active-alerts">
                 {activeAlerts}
               </p>
             </div>
-            <div className="w-10 h-10 bg-error/10 rounded-lg flex items-center justify-center">
-              <AlertTriangle className="text-error h-5 w-5" />
+            <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+              <AlertTriangle className="text-orange-600 dark:text-orange-400 h-4 w-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm text-gray-600">
-              <span className="flex items-center text-error">
-                <ArrowUp className="mr-1 h-4 w-4" />
-                <span data-testid="text-alert-trend">
-                  {activeAlerts > 5 ? 'High' : activeAlerts > 2 ? 'Elevated' : 'Normal'} activity
-                </span>
+          <div className="mt-3">
+            <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
+              <ArrowUp className="mr-1 h-3 w-3 text-orange-500" />
+              <span data-testid="text-alert-trend">
+                {activeAlerts > 5 ? 'High' : activeAlerts > 2 ? 'Elevated' : 'Normal'} activity
               </span>
             </div>
           </div>
@@ -68,51 +64,47 @@ export default function StatusOverview({ stats, apiSources, activeAlerts, compli
       </Card>
 
       {/* Compliance Score */}
-      <Card className="border border-gray-200">
-        <CardContent className="p-6">
+      <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Compliance Score</p>
-              <p className="text-2xl font-semibold text-secondary" data-testid="text-compliance-score">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Compliance Score</p>
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400" data-testid="text-compliance-score">
                 {complianceScore}%
               </p>
             </div>
-            <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
-              <Shield className="text-secondary h-5 w-5" />
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <Shield className="text-blue-600 dark:text-blue-400 h-4 w-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm text-gray-600">
-              <span className="flex items-center text-secondary">
-                <ArrowUp className="mr-1 h-4 w-4" />
-                <span data-testid="text-compliance-trend">
-                  {complianceScore >= 95 ? 'Excellent' : complianceScore >= 85 ? 'Good' : 'Needs attention'}
-                </span>
+          <div className="mt-3">
+            <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
+              <ArrowUp className="mr-1 h-3 w-3 text-blue-500" />
+              <span data-testid="text-compliance-trend">
+                {complianceScore >= 95 ? 'Excellent' : complianceScore >= 85 ? 'Good' : 'Needs attention'}
               </span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Data Classification */}
-      <Card className="border border-gray-200">
-        <CardContent className="p-6">
+      {/* API Calls Today */}
+      <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Sensitive Data Detected</p>
-              <p className="text-2xl font-semibold text-warning" data-testid="text-sensitive-data">
-                {sensitiveDataDetected}
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">API Calls Today</p>
+              <p className="text-xl font-bold text-indigo-600 dark:text-indigo-400" data-testid="text-sensitive-data">
+                {totalApiCalls}
               </p>
             </div>
-            <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
-              <Eye className="text-warning h-5 w-5" />
+            <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+              <Eye className="text-indigo-600 dark:text-indigo-400 h-4 w-4" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="flex items-center text-sm text-gray-600">
-              <span className="flex items-center text-gray-600">
-                <span data-testid="text-data-timeframe">Last 24 hours</span>
-              </span>
+          <div className="mt-3">
+            <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
+              <span data-testid="text-data-timeframe">Real-time tracking</span>
             </div>
           </div>
         </CardContent>
