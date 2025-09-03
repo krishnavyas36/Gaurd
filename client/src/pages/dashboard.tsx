@@ -36,6 +36,7 @@ export default function Dashboard() {
   const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(getCurrentESTString());
+  const [lastUpdated, setLastUpdated] = useState<string>(getCurrentESTString());
 
   const { data: initialData, isLoading } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
@@ -49,6 +50,7 @@ export default function Dashboard() {
     if (initialData) {
       setDashboardData(initialData);
       setActiveAlertCount(initialData.alerts.filter(alert => alert.status === 'active').length);
+      setLastUpdated(getCurrentESTString());
     }
   }, [initialData]);
 
@@ -102,6 +104,7 @@ export default function Dashboard() {
       if (response.ok) {
         const result = await response.json();
         setLastScanTime(new Date());
+        setLastUpdated(getCurrentESTString());
         console.log('Quick scan completed:', result);
         
         // Refresh dashboard data after scan
@@ -355,6 +358,8 @@ export default function Dashboard() {
           activeAlerts={activeAlertCount}
           complianceScore={dashboardData.complianceScore}
           isMonitoring={isMonitoring}
+          lastUpdated={lastUpdated}
+          lastScanTime={lastScanTime}
         />
 
         {/* Real-time Monitoring and Alerts */}

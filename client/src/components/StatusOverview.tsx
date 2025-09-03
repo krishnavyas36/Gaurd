@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Activity, AlertTriangle, Shield, Eye, ArrowUp, CheckCircle } from "lucide-react";
+import { Activity, AlertTriangle, Shield, Eye, ArrowUp, CheckCircle, Clock, RefreshCw } from "lucide-react";
+import { formatTimeAgoEST, formatShortTimeEST } from "@/lib/timeUtils";
 
 interface StatusOverviewProps {
   stats: any;
@@ -7,15 +8,17 @@ interface StatusOverviewProps {
   activeAlerts: number;
   complianceScore: number;
   isMonitoring: boolean;
+  lastUpdated?: string;
+  lastScanTime?: Date | null;
 }
 
-export default function StatusOverview({ stats, apiSources, activeAlerts, complianceScore, isMonitoring }: StatusOverviewProps) {
+export default function StatusOverview({ stats, apiSources, activeAlerts, complianceScore, isMonitoring, lastUpdated, lastScanTime }: StatusOverviewProps) {
   const activeSources = apiSources.filter(source => source.status === 'active').length;
   const totalApiCalls = stats?.totalApiCalls || 0;
   const sensitiveDataDetected = stats?.sensitiveDataDetected || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-testid="status-overview">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6" data-testid="status-overview">
       {/* API Monitoring Status */}
       <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
         <CardContent className="p-4">
@@ -122,6 +125,34 @@ export default function StatusOverview({ stats, apiSources, activeAlerts, compli
           <div className="mt-3">
             <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
               <span data-testid="text-data-timeframe">Real-time tracking</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Last Updated */}
+      <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Last Updated</p>
+              <p className="text-xl font-bold text-slate-700 dark:text-slate-300" data-testid="text-last-updated">
+                {lastUpdated ? formatShortTimeEST(lastUpdated) : 'Just now'}
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+              <Clock className="text-blue-600 dark:text-blue-400 h-4 w-4" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="flex items-center text-xs text-slate-600 dark:text-slate-400">
+              <RefreshCw className="mr-1 h-3 w-3 text-blue-500" />
+              <span data-testid="text-refresh-status">
+                {lastScanTime 
+                  ? `Last scan: ${formatTimeAgoEST(lastScanTime.toISOString())}`
+                  : 'Auto-refresh every 30s'
+                }
+              </span>
             </div>
           </div>
         </CardContent>
