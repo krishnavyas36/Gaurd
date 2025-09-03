@@ -180,7 +180,9 @@ export default function Dashboard() {
               
               {/* Connection Status */}
               <div className="flex items-center space-x-2 text-sm">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-slate-400'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-green-500 animate-pulse' : 'bg-green-500'
+                }`}></div>
                 <span className="text-slate-600 dark:text-slate-400">
                   {isConnected ? 'Live' : 'Polling'}
                 </span>
