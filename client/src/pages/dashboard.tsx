@@ -33,21 +33,25 @@ export default function Dashboard() {
     refetchInterval: 30000, // Fallback polling every 30 seconds
   });
 
-  const { isConnected } = useWebSocket({
-    onMessage: (message) => {
-      if (message.type === 'dashboard_update') {
-        setDashboardData(message.data);
-      } else if (message.type === 'new_alert') {
-        setActiveAlertCount(prev => prev + 1);
-      }
-    },
-    onOpen: () => {
-      console.log('Connected to WebSocket');
-    },
-    onClose: () => {
-      console.log('Disconnected from WebSocket');
-    }
-  });
+  // Temporarily disable WebSocket to fix connection issues
+  const isConnected = false;
+  
+  // const { isConnected } = useWebSocket({
+  //   onMessage: (message) => {
+  //     if (message.type === 'dashboard_update') {
+  //       setDashboardData(message.data);
+  //     } else if (message.type === 'new_alert') {
+  //       setActiveAlertCount(prev => prev + 1);
+  //     }
+  //   },
+  //   onOpen: () => {
+  //     console.log('Connected to WebSocket');
+  //   },
+  //   onClose: () => {
+  //     console.log('Disconnected from WebSocket');
+  //   },
+  //   maxReconnectAttempts: 0 // Disable automatic reconnection
+  // });
 
   useEffect(() => {
     if (initialData) {
