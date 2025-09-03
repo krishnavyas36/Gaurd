@@ -139,12 +139,33 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                         <AlertTriangle className="h-4 w-4 text-red-500" />
                         <span className="text-sm">Financial Advice Detection</span>
                       </div>
-                      <Switch
-                        checked={scanSettings.enableFinancialAdviceDetection}
-                        onCheckedChange={(checked) => 
-                          setScanSettings(prev => ({ ...prev, enableFinancialAdviceDetection: checked }))
-                        }
-                      />
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setScanSettings(prev => ({ ...prev, enableFinancialAdviceDetection: !prev.enableFinancialAdviceDetection }))}
+                          className={`
+                            relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+                            ${scanSettings.enableFinancialAdviceDetection 
+                              ? 'bg-emerald-600 hover:bg-emerald-700' 
+                              : 'bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500'
+                            }
+                          `}
+                        >
+                          <span className="sr-only">Toggle financial advice detection</span>
+                          <span
+                            className={`
+                              inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                              ${scanSettings.enableFinancialAdviceDetection ? 'translate-x-6' : 'translate-x-1'}
+                            `}
+                          />
+                        </button>
+                        <span className={`text-xs font-medium ${
+                          scanSettings.enableFinancialAdviceDetection 
+                            ? 'text-emerald-600 dark:text-emerald-400' 
+                            : 'text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {scanSettings.enableFinancialAdviceDetection ? 'ON' : 'OFF'}
+                        </span>
+                      </div>
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -152,12 +173,33 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                         <Shield className="h-4 w-4 text-orange-500" />
                         <span className="text-sm">PII Detection</span>
                       </div>
-                      <Switch
-                        checked={scanSettings.enablePIIDetection}
-                        onCheckedChange={(checked) => 
-                          setScanSettings(prev => ({ ...prev, enablePIIDetection: checked }))
-                        }
-                      />
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setScanSettings(prev => ({ ...prev, enablePIIDetection: !prev.enablePIIDetection }))}
+                          className={`
+                            relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+                            ${scanSettings.enablePIIDetection 
+                              ? 'bg-emerald-600 hover:bg-emerald-700' 
+                              : 'bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500'
+                            }
+                          `}
+                        >
+                          <span className="sr-only">Toggle PII detection</span>
+                          <span
+                            className={`
+                              inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                              ${scanSettings.enablePIIDetection ? 'translate-x-6' : 'translate-x-1'}
+                            `}
+                          />
+                        </button>
+                        <span className={`text-xs font-medium ${
+                          scanSettings.enablePIIDetection 
+                            ? 'text-emerald-600 dark:text-emerald-400' 
+                            : 'text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {scanSettings.enablePIIDetection ? 'ON' : 'OFF'}
+                        </span>
+                      </div>
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -165,12 +207,33 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                         <FileText className="h-4 w-4 text-blue-500" />
                         <span className="text-sm">Unverified Data Detection</span>
                       </div>
-                      <Switch
-                        checked={scanSettings.enableUnverifiedDataDetection}
-                        onCheckedChange={(checked) => 
-                          setScanSettings(prev => ({ ...prev, enableUnverifiedDataDetection: checked }))
-                        }
-                      />
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setScanSettings(prev => ({ ...prev, enableUnverifiedDataDetection: !prev.enableUnverifiedDataDetection }))}
+                          className={`
+                            relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+                            ${scanSettings.enableUnverifiedDataDetection 
+                              ? 'bg-emerald-600 hover:bg-emerald-700' 
+                              : 'bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500'
+                            }
+                          `}
+                        >
+                          <span className="sr-only">Toggle unverified data detection</span>
+                          <span
+                            className={`
+                              inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                              ${scanSettings.enableUnverifiedDataDetection ? 'translate-x-6' : 'translate-x-1'}
+                            `}
+                          />
+                        </button>
+                        <span className={`text-xs font-medium ${
+                          scanSettings.enableUnverifiedDataDetection 
+                            ? 'text-emerald-600 dark:text-emerald-400' 
+                            : 'text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {scanSettings.enableUnverifiedDataDetection ? 'ON' : 'OFF'}
+                        </span>
+                      </div>
                     </div>
                     
                     <div className="flex items-center justify-between">
@@ -178,12 +241,33 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                         <Shield className="h-4 w-4 text-green-500" />
                         <span className="text-sm">Auto-block Violations</span>
                       </div>
-                      <Switch
-                        checked={scanSettings.autoBlockViolations}
-                        onCheckedChange={(checked) => 
-                          setScanSettings(prev => ({ ...prev, autoBlockViolations: checked }))
-                        }
-                      />
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setScanSettings(prev => ({ ...prev, autoBlockViolations: !prev.autoBlockViolations }))}
+                          className={`
+                            relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+                            ${scanSettings.autoBlockViolations 
+                              ? 'bg-emerald-600 hover:bg-emerald-700' 
+                              : 'bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500'
+                            }
+                          `}
+                        >
+                          <span className="sr-only">Toggle auto-block violations</span>
+                          <span
+                            className={`
+                              inline-block h-4 w-4 transform rounded-full bg-white transition-transform
+                              ${scanSettings.autoBlockViolations ? 'translate-x-6' : 'translate-x-1'}
+                            `}
+                          />
+                        </button>
+                        <span className={`text-xs font-medium ${
+                          scanSettings.autoBlockViolations 
+                            ? 'text-emerald-600 dark:text-emerald-400' 
+                            : 'text-slate-600 dark:text-slate-400'
+                        }`}>
+                          {scanSettings.autoBlockViolations ? 'ON' : 'OFF'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
