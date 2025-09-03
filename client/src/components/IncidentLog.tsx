@@ -1,9 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Download, AlertCircle, AlertTriangle, Info, ExternalLink, X } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useState } from "react";
 
 interface IncidentLogProps {
   incidents: any[];
@@ -11,6 +13,7 @@ interface IncidentLogProps {
 
 export default function IncidentLog({ incidents }: IncidentLogProps) {
   const queryClient = useQueryClient();
+  const [isAllIncidentsOpen, setIsAllIncidentsOpen] = useState(false);
 
   const updateIncident = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
@@ -18,6 +21,28 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+    }
+  });
+
+  const exportIncidents = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/incidents/export');
+      if (!response.ok) throw new Error('Export failed');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `security_incidents_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      return { success: true };
+    },
+    onSuccess: () => {
+      console.log(`Exported ${incidents.length} incidents to CSV`);
     }
   });
 
@@ -219,13 +244,112 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
 
         {incidents.length > 5 && (
           <div className="mt-6">
-            <Button 
-              variant="ghost" 
-              className="w-full text-center text-primary hover:text-primary/80 text-sm font-medium transition-colors"
-              data-testid="button-view-all-incidents"
-            >
-              View All Incidents ({incidents.length})
-            </Button>
+            <Dialog open={isAllIncidentsOpen} onOpenChange={setIsAllIncidentsOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-center text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                  data-testid="button-view-all-incidents"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View All Incidents ({incidents.length})
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl" aria-describedby="incidents-dialog-description">
+                <DialogHeader>
+                  <div className="flex items-center justify-between">
+                    <DialogTitle className="flex items-center space-x-2">
+                      <AlertTriangle className="h-5 w-5" />
+                      <span>All Security Incidents ({incidents.length})</span>
+                    </DialogTitle>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => exportIncidents.mutate()}
+                      disabled={exportIncidents.isPending}
+                      className="flex items-center space-x-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Export CSV</span>
+                    </Button>
+                  </div>
+                  <p id="incidents-dialog-description" className="text-sm text-slate-600 dark:text-slate-400">
+                    Complete list of security incidents with details and resolution status
+                  </p>
+                </DialogHeader>
+                <div className="space-y-4 overflow-y-auto max-h-96">
+                  {incidents.map((incident, index) => (
+                    <div 
+                      key={incident.id || index} 
+                      className={`p-4 rounded-lg border transition-colors ${getSeverityBorderColor(incident.severity)}`}
+                      data-testid={`incident-${index}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <div className={`flex items-center space-x-1 ${
+                              incident.severity === 'critical' ? 'text-error' : 
+                              incident.severity === 'warning' ? 'text-warning' : 
+                              'text-info'
+                            }`}>
+                              {getSeverityIcon(incident.severity)}
+                              <Badge 
+                                className={getSeverityColor(incident.severity)}
+                                data-testid={`badge-severity-${index}`}
+                              >
+                                {incident.severity?.toUpperCase()}
+                              </Badge>
+                            </div>
+                            <span className="text-xs text-slate-500 dark:text-slate-400" data-testid={`text-time-${index}`}>
+                              {formatTimeAgo(incident.timestamp)}
+                            </span>
+                            <Badge 
+                              className={getStatusColor(incident.status)}
+                              data-testid={`badge-status-${index}`}
+                            >
+                              {incident.status || 'Open'}
+                            </Badge>
+                          </div>
+                          <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1" data-testid={`text-description-${index}`}>
+                            {incident.description}
+                          </h4>
+                          {incident.source && (
+                            <div className="flex items-center space-x-1 mb-2">
+                              <span className="text-xs text-slate-500">Source:</span>
+                              <Badge variant="outline" className="text-xs">
+                                {incident.source}
+                              </Badge>
+                            </div>
+                          )}
+                          {incident.id && (
+                            <div className="text-xs text-slate-400 font-mono">
+                              ID: {incident.id}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 ml-4">
+                          {incident.status !== 'resolved' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => updateIncident.mutate({ 
+                                id: incident.id, 
+                                updates: { status: 'resolved' } 
+                              })}
+                              disabled={updateIncident.isPending}
+                              className="text-xs"
+                              data-testid={`button-resolve-${index}`}
+                            >
+                              Mark Resolved
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </CardContent>
