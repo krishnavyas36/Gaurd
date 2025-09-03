@@ -124,9 +124,12 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                 <span>Configure</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl backdrop-blur-sm">
+            <DialogContent className="max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl backdrop-blur-sm" aria-describedby="config-dialog-description">
               <DialogHeader>
                 <DialogTitle>LLM Scanner Configuration</DialogTitle>
+                <p id="config-dialog-description" className="text-sm text-slate-600 dark:text-slate-400">
+                  Configure LLM response scanning settings and test detection capabilities
+                </p>
               </DialogHeader>
               <div className="space-y-6 pt-4">
                 {/* Scanning Settings */}

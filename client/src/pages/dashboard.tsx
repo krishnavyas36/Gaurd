@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useWebSocket } from "@/hooks/useWebSocket";
+// import { useWebSocket } from "@/hooks/useWebSocket"; // Disabled - using polling instead
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock } from "lucide-react";
@@ -40,25 +40,8 @@ export default function Dashboard() {
     refetchInterval: 30000, // Fallback polling every 30 seconds
   });
 
-  // WebSocket disabled - using polling for real-time updates instead
+  // WebSocket completely disabled - using reliable 30-second polling instead
   const isConnected = false;
-  
-  // const { isConnected } = useWebSocket({
-  //   onMessage: (message) => {
-  //     if (message.type === 'dashboard_update') {
-  //       setDashboardData(message.data);
-  //     } else if (message.type === 'new_alert') {
-  //       setActiveAlertCount(prev => prev + 1);
-  //     }
-  //   },
-  //   onOpen: () => {
-  //     console.log('Connected to WebSocket');
-  //   },
-  //   onClose: () => {
-  //     console.log('Disconnected from WebSocket');
-  //   },
-  //   maxReconnectAttempts: 0 // Disable automatic reconnection
-  // });
 
   useEffect(() => {
     if (initialData) {
@@ -236,12 +219,15 @@ export default function Dashboard() {
                       )}
                     </button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl">
+                  <DialogContent className="max-w-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl" aria-describedby="alert-dialog-description">
                     <DialogHeader>
                       <DialogTitle className="flex items-center space-x-2">
                         <Bell className="h-5 w-5" />
                         <span>Security Alerts ({activeAlertCount})</span>
                       </DialogTitle>
+                      <p id="alert-dialog-description" className="text-sm text-slate-600 dark:text-slate-400">
+                        View and manage your active security alerts and incidents
+                      </p>
                     </DialogHeader>
                     <div className="space-y-4 max-h-96 overflow-y-auto">
                       {dashboardData.alerts.filter(alert => alert.status === 'active').length === 0 ? (
