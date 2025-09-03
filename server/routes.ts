@@ -12,6 +12,7 @@ import { complianceEngine } from "./services/complianceEngine";
 import { discordService } from "./services/discordService";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
+import { registerApiTrackingRoutes } from "./routes/apiTracking";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -1205,6 +1206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error in periodic tasks:', error);
     }
   }, 5 * 60 * 1000); // 5 minutes
+
+  // Register API tracking routes
+  registerApiTrackingRoutes(app);
 
   return httpServer;
 }

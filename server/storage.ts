@@ -6,9 +6,13 @@ import {
   type DataClassification, type InsertDataClassification,
   type LlmViolation, type InsertLlmViolation,
   type Incident, type InsertIncident,
-  type MonitoringStats, type InsertMonitoringStats
+  type MonitoringStats, type InsertMonitoringStats,
+  users, apiSources, alerts, complianceRules, dataClassifications,
+  llmViolations, incidents, monitoringStats
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -544,4 +548,209 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage Implementation
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  // API Sources
+  async getApiSources(): Promise<ApiSource[]> {
+    return await db.select().from(apiSources);
+  }
+
+  async getApiSource(id: string): Promise<ApiSource | undefined> {
+    const [source] = await db.select().from(apiSources).where(eq(apiSources.id, id));
+    return source || undefined;
+  }
+
+  async createApiSource(source: InsertApiSource): Promise<ApiSource> {
+    const [newSource] = await db.insert(apiSources).values(source).returning();
+    return newSource;
+  }
+
+  async updateApiSource(id: string, updates: Partial<ApiSource>): Promise<ApiSource | undefined> {
+    const [updated] = await db.update(apiSources)
+      .set(updates)
+      .where(eq(apiSources.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteApiSource(id: string): Promise<boolean> {
+    const result = await db.delete(apiSources).where(eq(apiSources.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Alerts
+  async getAlerts(limit: number = 50): Promise<Alert[]> {
+    return await db.select().from(alerts)
+      .orderBy(desc(alerts.timestamp))
+      .limit(limit);
+  }
+
+  async getActiveAlerts(): Promise<Alert[]> {
+    return await db.select().from(alerts).where(eq(alerts.status, "active"));
+  }
+
+  async createAlert(alert: InsertAlert): Promise<Alert> {
+    const [newAlert] = await db.insert(alerts).values(alert).returning();
+    return newAlert;
+  }
+
+  async updateAlert(id: string, updates: Partial<Alert>): Promise<Alert | undefined> {
+    const [updated] = await db.update(alerts)
+      .set(updates)
+      .where(eq(alerts.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteAlert(id: string): Promise<boolean> {
+    const result = await db.delete(alerts).where(eq(alerts.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Compliance Rules
+  async getComplianceRules(): Promise<ComplianceRule[]> {
+    return await db.select().from(complianceRules);
+  }
+
+  async getActiveComplianceRules(): Promise<ComplianceRule[]> {
+    return await db.select().from(complianceRules).where(eq(complianceRules.isActive, true));
+  }
+
+  async createComplianceRule(rule: InsertComplianceRule): Promise<ComplianceRule> {
+    const [newRule] = await db.insert(complianceRules).values(rule).returning();
+    return newRule;
+  }
+
+  async updateComplianceRule(id: string, updates: Partial<ComplianceRule>): Promise<ComplianceRule | undefined> {
+    const [updated] = await db.update(complianceRules)
+      .set(updates)
+      .where(eq(complianceRules.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteComplianceRule(id: string): Promise<boolean> {
+    const result = await db.delete(complianceRules).where(eq(complianceRules.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Data Classifications
+  async getDataClassifications(limit: number = 100): Promise<DataClassification[]> {
+    return await db.select().from(dataClassifications)
+      .orderBy(desc(dataClassifications.timestamp))
+      .limit(limit);
+  }
+
+  async getDataClassificationsByRisk(riskLevel: string): Promise<DataClassification[]> {
+    return await db.select().from(dataClassifications)
+      .where(eq(dataClassifications.riskLevel, riskLevel));
+  }
+
+  async createDataClassification(classification: InsertDataClassification): Promise<DataClassification> {
+    const [newClassification] = await db.insert(dataClassifications).values(classification).returning();
+    return newClassification;
+  }
+
+  async updateDataClassification(id: string, updates: Partial<DataClassification>): Promise<DataClassification | undefined> {
+    const [updated] = await db.update(dataClassifications)
+      .set(updates)
+      .where(eq(dataClassifications.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  // LLM Violations
+  async getLlmViolations(limit: number = 50): Promise<LlmViolation[]> {
+    return await db.select().from(llmViolations)
+      .orderBy(desc(llmViolations.timestamp))
+      .limit(limit);
+  }
+
+  async createLlmViolation(violation: InsertLlmViolation): Promise<LlmViolation> {
+    const [newViolation] = await db.insert(llmViolations).values(violation).returning();
+    return newViolation;
+  }
+
+  // Incidents
+  async getIncidents(limit: number = 50): Promise<Incident[]> {
+    return await db.select().from(incidents)
+      .orderBy(desc(incidents.timestamp))
+      .limit(limit);
+  }
+
+  async createIncident(incident: InsertIncident): Promise<Incident> {
+    const [newIncident] = await db.insert(incidents).values(incident).returning();
+    return newIncident;
+  }
+
+  async updateIncident(id: string, updates: Partial<Incident>): Promise<Incident | undefined> {
+    const [updated] = await db.update(incidents)
+      .set(updates)
+      .where(eq(incidents.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  // Monitoring Stats
+  async getMonitoringStats(date?: string): Promise<MonitoringStats | undefined> {
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const [stats] = await db.select().from(monitoringStats)
+      .where(eq(monitoringStats.date, targetDate));
+    return stats || undefined;
+  }
+
+  async createOrUpdateMonitoringStats(stats: InsertMonitoringStats): Promise<MonitoringStats> {
+    const existing = await this.getMonitoringStats(stats.date);
+    
+    if (existing) {
+      const [updated] = await db.update(monitoringStats)
+        .set(stats)
+        .where(eq(monitoringStats.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [newStats] = await db.insert(monitoringStats).values(stats).returning();
+      return newStats;
+    }
+  }
+
+  async getTodaysStats(): Promise<MonitoringStats> {
+    const today = new Date().toISOString().split('T')[0];
+    const existing = await this.getMonitoringStats(today);
+    
+    if (existing) {
+      return existing;
+    }
+
+    // Create default stats for today
+    const defaultStats: InsertMonitoringStats = {
+      date: today,
+      totalApiCalls: 0,
+      alertsGenerated: 0,
+      complianceScore: 100,
+      sensitiveDataDetected: 0,
+      llmResponsesScanned: 0,
+      llmResponsesFlagged: 0,
+      llmResponsesBlocked: 0
+    };
+
+    return await this.createOrUpdateMonitoringStats(defaultStats);
+  }
+}
+
+export const storage = new DatabaseStorage();

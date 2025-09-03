@@ -2,6 +2,7 @@ import { PlaidApi, Configuration, PlaidEnvironments, TransactionsGetRequest, Acc
 import { storage } from '../storage';
 import { monitoringService } from './monitoring';
 import { discordService } from './discordService';
+import { apiTracker } from './apiTracker';
 
 interface PlaidTransactionData {
   account_id: string;
@@ -73,7 +74,13 @@ class PlaidEnhancedService {
         end_date: endDate,
       };
 
+      const startTime = Date.now();
       const response = await this.client.transactionsGet(request);
+      const responseTime = Date.now() - startTime;
+      
+      // Track the API call
+      await apiTracker.trackPlaidCall('/transactions/get', responseTime);
+      
       const transactions = response.data.transactions;
 
       console.log(`Retrieved ${transactions.length} transactions from Plaid`);
@@ -142,7 +149,13 @@ class PlaidEnhancedService {
         access_token: accessToken,
       };
 
+      const startTime = Date.now();
       const response = await this.client.accountsGet(request);
+      const responseTime = Date.now() - startTime;
+      
+      // Track the API call
+      await apiTracker.trackPlaidCall('/accounts/get', responseTime);
+      
       const accounts = response.data.accounts;
 
       console.log(`Retrieved ${accounts.length} accounts from Plaid`);
