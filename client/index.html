@@ -15,13 +15,10 @@
       const originalConsoleWarn = console.warn;
       
       function isWebSocketError(message) {
-        return message.includes('WebSocket') || 
-               message.includes('DOMException') || 
-               message.includes('wss://') || 
-               message.includes('ws://') ||
-               message.includes('Failed to construct') ||
-               message.includes('localhost:undefined') ||
-               message.includes('SyntaxError') && message.includes('URL');
+        return (message.includes('WebSocket') && message.includes('localhost:undefined')) || 
+               (message.includes('DOMException') && message.includes('WebSocket')) || 
+               (message.includes('Failed to construct') && message.includes('WebSocket')) ||
+               message.includes('/?token=');
       }
       
       // Override console methods
@@ -41,13 +38,19 @@
         originalConsoleWarn.apply(console, args);
       };
 
-      // Prevent WebSocket construction entirely
+      // Prevent problematic WebSocket connections only
       const OriginalWebSocket = window.WebSocket;
       window.WebSocket = function(url, protocols) {
-        if (url && (url.includes('localhost:undefined') || url.includes('wss://localhost:undefined'))) {
-          // Silently prevent WebSocket creation for undefined ports
-          console.log('WebSocket blocked - using polling for updates');
-          throw new Error('WebSocket disabled - using polling');
+        // Only block undefined ports and our app's WebSocket, allow Vite's WebSocket
+        if (url && (url.includes('localhost:undefined') || url.includes('/?token='))) {
+          // Silently fail for our app's WebSocket attempts
+          return {
+            readyState: 3, // CLOSED
+            close: () => {},
+            send: () => {},
+            addEventListener: () => {},
+            removeEventListener: () => {}
+          };
         }
         return new OriginalWebSocket(url, protocols);
       };
