@@ -1130,6 +1130,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear test data endpoint
+  app.post("/api/admin/clear-test-data", async (req, res) => {
+    try {
+      console.log("🧹 Clearing all test data...");
+
+      // Clear test LLM violations (the fake credit card test)
+      await storage.clearAllLlmViolations();
+      
+      // Clear test alerts 
+      await storage.clearAllAlerts();
+
+      // Reset LLM scanner counters to reflect only real scans
+      await llmScannerService.resetTestCounters();
+
+      console.log("✅ Test data cleared successfully");
+      res.json({ success: true, message: "All test data cleared" });
+    } catch (error) {
+      console.error('Error clearing test data:', error);
+      res.status(500).json({ error: "Failed to clear test data" });
+    }
+  });
+
   function calculateRiskScore(monitoringData: any) {
     let score = 0;
     

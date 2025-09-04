@@ -251,6 +251,18 @@ export class MemStorage implements IStorage {
     return this.alerts.delete(id);
   }
 
+  async deleteLlmViolation(id: string): Promise<boolean> {
+    return this.llmViolations.delete(id);
+  }
+
+  async clearAllLlmViolations(): Promise<void> {
+    this.llmViolations.clear();
+  }
+
+  async clearAllAlerts(): Promise<void> {
+    this.alerts.clear();
+  }
+
   // Compliance Rules
   async getComplianceRules(): Promise<ComplianceRule[]> {
     return Array.from(this.complianceRules.values());

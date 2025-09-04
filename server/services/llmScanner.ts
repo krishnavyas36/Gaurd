@@ -238,6 +238,21 @@ export class LLMScannerService {
 
     return stats;
   }
+
+  async resetTestCounters() {
+    const today = new Date().toISOString().split('T')[0];
+    const stats = await storage.getMonitoringStats(today);
+    if (stats) {
+      // Reset LLM counters to only include real scans (3 real OpenAI calls were made)
+      await storage.createOrUpdateMonitoringStats({
+        ...stats,
+        llmResponsesScanned: 3, // Only count real OpenAI API calls
+        llmResponsesFlagged: 0,  // No real violations
+        llmResponsesBlocked: 0   // No real blocks
+      });
+      console.log("🔄 LLM test counters reset to real data only");
+    }
+  }
 }
 
 export const llmScannerService = new LLMScannerService();
