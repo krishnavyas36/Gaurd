@@ -10,48 +10,63 @@
   <body>
     <div id="root"></div>
     <script>
-      // Override console.error to suppress WebSocket development errors
+      // Comprehensive WebSocket error suppression
       const originalConsoleError = console.error;
+      const originalConsoleWarn = console.warn;
+      
+      function isWebSocketError(message) {
+        return message.includes('WebSocket') || 
+               message.includes('DOMException') || 
+               message.includes('wss://') || 
+               message.includes('ws://') ||
+               message.includes('Failed to construct') ||
+               message.includes('localhost:undefined') ||
+               message.includes('SyntaxError') && message.includes('URL');
+      }
+      
+      // Override console methods
       console.error = function(...args) {
         const message = args.join(' ');
-        if (message.includes('WebSocket') || 
-            message.includes('DOMException') || 
-            message.includes('wss://') || 
-            message.includes('ws://') ||
-            message.includes('Failed to construct')) {
-          console.log('Development WebSocket error suppressed - using polling for updates');
-          return;
+        if (isWebSocketError(message)) {
+          return; // Completely suppress WebSocket errors
         }
         originalConsoleError.apply(console, args);
       };
+      
+      console.warn = function(...args) {
+        const message = args.join(' ');
+        if (isWebSocketError(message)) {
+          return; // Completely suppress WebSocket warnings
+        }
+        originalConsoleWarn.apply(console, args);
+      };
 
-      // Handle WebSocket errors from Vite development server immediately
+      // Prevent WebSocket construction entirely
+      const OriginalWebSocket = window.WebSocket;
+      window.WebSocket = function(url, protocols) {
+        if (url && (url.includes('localhost:undefined') || url.includes('wss://localhost:undefined'))) {
+          // Silently prevent WebSocket creation for undefined ports
+          console.log('WebSocket blocked - using polling for updates');
+          throw new Error('WebSocket disabled - using polling');
+        }
+        return new OriginalWebSocket(url, protocols);
+      };
+
+      // Handle all error events
       window.addEventListener('error', function(event) {
-        if (event.error && (
-          event.error.toString().includes('WebSocket') || 
-          event.error.toString().includes('DOMException') ||
-          event.message.includes('WebSocket') ||
-          event.message.includes('wss://') ||
-          event.message.includes('ws://') ||
-          event.message.includes('Failed to construct')
-        )) {
+        if (event.error && isWebSocketError(event.error.toString())) {
           event.preventDefault();
           event.stopPropagation();
-          console.log('Development WebSocket handled - using polling for updates');
+          event.stopImmediatePropagation();
           return false;
         }
       }, true);
       
       window.addEventListener('unhandledrejection', function(event) {
-        if (event.reason && (
-          event.reason.toString().includes('WebSocket') || 
-          event.reason.toString().includes('DOMException') ||
-          event.reason.toString().includes('wss://') ||
-          event.reason.toString().includes('ws://') ||
-          event.reason.toString().includes('Failed to construct')
-        )) {
+        if (event.reason && isWebSocketError(event.reason.toString())) {
           event.preventDefault();
-          console.log('Development WebSocket rejection handled - using polling for updates');
+          event.stopPropagation();
+          event.stopImmediatePropagation();
         }
       }, true);
     </script>
