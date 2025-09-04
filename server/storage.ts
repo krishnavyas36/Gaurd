@@ -82,8 +82,7 @@ export class MemStorage implements IStorage {
     // Initialize real API sources with zero calls (real tracking starts from here)
     const defaultSources: InsertApiSource[] = [
       { name: "Plaid API", url: "https://production.plaid.com", status: "active", callsToday: 0, alertStatus: "normal" },
-      { name: "OpenAI API", url: "https://api.openai.com", status: "active", callsToday: 0, alertStatus: "normal" },
-      { name: "Test Service", url: "/test", status: "active", callsToday: 0, alertStatus: "normal" }
+      { name: "OpenAI API", url: "https://api.openai.com", status: "active", callsToday: 0, alertStatus: "normal" }
     ];
 
     defaultSources.forEach(source => {
