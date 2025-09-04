@@ -1068,7 +1068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const startTime = Date.now();
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini", // Latest efficient model
+        model: "gpt-3.5-turbo", // Using confirmed available model
         messages: [
           {
             role: "user",
