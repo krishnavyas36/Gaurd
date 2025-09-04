@@ -1161,22 +1161,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "userId is required" });
       }
 
-      console.log(`🔗 Creating Plaid Link token for user: ${userId}`);
+      // Make real Plaid API call
+      const response = await plaidEnhancedService.createLinkToken(userId, userEmail);
       
-      // Demo response - replace with actual Plaid service when available
-      const response = {
-        data: {
-          link_token: "demo_link_token",
-          expiration: new Date(Date.now() + 3600000).toISOString(),
-          request_id: "demo_request_id"
-        }
-      };
-      
-      res.json({
-        link_token: response.data.link_token,
-        expiration: response.data.expiration,
-        request_id: response.data.request_id
-      });
+      res.json(response);
     } catch (error: any) {
       console.error('Error creating link token:', error.message);
       res.status(500).json({ 
@@ -1195,22 +1183,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "public_token is required" });
       }
 
-      console.log(`🔄 Exchanging Plaid public token...`);
+      // Make real Plaid API call
+      const response = await plaidEnhancedService.exchangePublicToken(public_token);
       
-      // Demo response - replace with actual Plaid service when available
-      const response = {
-        data: {
-          access_token: "demo_access_token",
-          item_id: "demo_item_id",
-          request_id: "demo_request_id"
-        }
-      };
-      
-      res.json({
-        access_token: response.data.access_token,
-        item_id: response.data.item_id,
-        request_id: response.data.request_id
-      });
+      res.json(response);
     } catch (error: any) {
       console.error('Error exchanging token:', error.message);
       res.status(500).json({ 

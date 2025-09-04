@@ -64,6 +64,69 @@ class PlaidEnhancedService {
     this.client = new PlaidApi(configuration);
   }
 
+  async createLinkToken(userId: string, userEmail?: string) {
+    try {
+      console.log(`🔗 Creating real Plaid Link token for user: ${userId}`);
+      
+      const request = {
+        user: {
+          client_user_id: userId,
+          email_address: userEmail
+        },
+        client_name: "WalletGyde Security Agent",
+        products: ['transactions'] as const,
+        country_codes: ['US'] as const,
+        language: 'en' as const,
+      };
+
+      const startTime = Date.now();
+      const response = await this.client.linkTokenCreate(request);
+      const responseTime = Date.now() - startTime;
+
+      // Track the API call
+      await apiTracker.trackPlaidCall('/link/token/create', responseTime);
+
+      console.log(`✅ Real Plaid Link token created successfully`);
+      
+      return {
+        link_token: response.data.link_token,
+        expiration: response.data.expiration,
+        request_id: response.data.request_id
+      };
+    } catch (error: any) {
+      console.error('Real Plaid API error:', error);
+      throw error;
+    }
+  }
+
+  async exchangePublicToken(publicToken: string) {
+    try {
+      console.log(`🔄 Exchanging real Plaid public token...`);
+      
+      const request = {
+        public_token: publicToken,
+      };
+
+      const startTime = Date.now();
+      const response = await this.client.itemPublicTokenExchange(request);
+      const responseTime = Date.now() - startTime;
+
+      // Track the API call
+      await apiTracker.trackPlaidCall('/item/public_token/exchange', responseTime);
+
+      console.log(`✅ Real Plaid token exchange completed`);
+      
+      return {
+        access_token: response.data.access_token,
+        item_id: response.data.item_id,
+        request_id: response.data.request_id
+      };
+    } catch (error: any) {
+      console.error('Real Plaid API error:', error);
+      throw error;
+    }
+  }
+
   async pullTransactionsAndMetadata(accessToken: string, startDate: string, endDate: string): Promise<PlaidTransactionData[]> {
     try {
       console.log(`Pulling Plaid transactions from ${startDate} to ${endDate}`);
