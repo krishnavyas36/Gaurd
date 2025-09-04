@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 // import { useWebSocket } from "@/hooks/useWebSocket"; // Disabled - using polling instead
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock } from "lucide-react";
+import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock , LogOut
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ import DataClassification from "@/components/DataClassification";
 import LLMResponseMonitor from "@/components/LLMResponseMonitor";
 import IncidentLog from "@/components/IncidentLog";
 import { formatTimeAgoEST, formatFullDateTimeEST, getCurrentESTString } from "@/lib/timeUtils";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardData {
   apiSources: any[];
@@ -28,6 +30,7 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
+  const { user, isAuthenticated } = useAuth();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [activeAlertCount, setActiveAlertCount] = useState(0);
   const [isMonitoring, setIsMonitoring] = useState(true);
@@ -302,15 +305,34 @@ export default function Dashboard() {
 
               {/* User Profile */}
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-sm">
-                  <User className="text-white w-4 h-4" />
-                </div>
+                {user?.profileImageUrl ? (
+                  <img 
+                    src={user.profileImageUrl} 
+                    alt="Profile" 
+                    className="w-8 h-8 rounded-full object-cover shadow-sm"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-sm">
+                    <User className="text-white w-4 h-4" />
+                  </div>
+                )}
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-slate-900 dark:text-white" data-testid="text-username">
-                    Security Admin
+                    {user?.firstName || user?.email || 'Security Admin'}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Administrator</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {user?.lastName ? `${user.firstName} ${user.lastName}` : 'Administrator'}
+                  </p>
                 </div>
+                <Button
+                  onClick={() => window.location.href = '/api/logout'}
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  data-testid="button-logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>

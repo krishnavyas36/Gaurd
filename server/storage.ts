@@ -1,5 +1,5 @@
 import { 
-  type User, type InsertUser,
+  type User, type UpsertUser,
   type ApiSource, type InsertApiSource,
   type Alert, type InsertAlert,
   type ComplianceRule, type InsertComplianceRule,
@@ -15,10 +15,9 @@ import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
-  // Users
+  // Users (for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // API Sources
   getApiSources(): Promise<ApiSource[]>;
@@ -162,20 +161,36 @@ export class MemStorage implements IStorage {
     // These will be created only when real security events occur
   }
 
-  // Users
+  // Users (for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const existingUser = this.users.get(userData.id!);
+    if (existingUser) {
+      // Update existing user
+      const updatedUser: User = {
+        ...existingUser,
+        ...userData,
+        updatedAt: new Date(),
+      };
+      this.users.set(userData.id!, updatedUser);
+      return updatedUser;
+    } else {
+      // Create new user
+      const newUser: User = {
+        id: userData.id || randomUUID(),
+        email: userData.email || null,
+        firstName: userData.firstName || null,
+        lastName: userData.lastName || null,
+        profileImageUrl: userData.profileImageUrl || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      this.users.set(newUser.id, newUser);
+      return newUser;
+    }
   }
 
   // API Sources

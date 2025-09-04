@@ -89,18 +89,41 @@ export default function Landing() {
           ))}
         </div>
 
-        {/* Newsletter Signup Section */}
-        <div className="text-center space-y-6" data-testid="newsletter-section">
-          <h2 className="text-2xl font-semibold text-gray-900" data-testid="newsletter-title">
-            Sign Up For Our Newsletter!
+        {/* Login Section */}
+        <div className="text-center space-y-6" data-testid="login-section">
+          <h2 className="text-3xl font-bold text-gray-900" data-testid="login-title">
+            Welcome to WalletGyde Security
           </h2>
           
           <div className="space-y-2">
-            <p className="text-gray-600" data-testid="newsletter-description">
-              Get exclusive access to new product releases and essential financial insights.
+            <p className="text-xl text-gray-600" data-testid="login-description">
+              Advanced API monitoring, compliance tracking, and security management
             </p>
             <p className="text-gray-600">
-              Don't miss out—be the first to know!
+              Sign in to access your security dashboard
+            </p>
+          </div>
+
+          <div className="max-w-sm mx-auto">
+            <Button
+              onClick={() => window.location.href = '/api/login'}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-6 text-lg font-semibold rounded-lg"
+              data-testid="button-login"
+            >
+              Sign In to Dashboard
+            </Button>
+          </div>
+        </div>
+
+        {/* Newsletter Signup Section */}
+        <div className="text-center space-y-6 mt-16" data-testid="newsletter-section">
+          <h3 className="text-xl font-semibold text-gray-900" data-testid="newsletter-title">
+            Stay Updated
+          </h3>
+          
+          <div className="space-y-2">
+            <p className="text-gray-600" data-testid="newsletter-description">
+              Get security insights and product updates
             </p>
           </div>
 
@@ -118,10 +141,10 @@ export default function Landing() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-green-600 hover:bg-green-700 text-white px-6"
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6"
                 data-testid="button-newsletter-signup"
               >
-                {isSubmitting ? 'Signing Up...' : 'Sign Up'}
+                {isSubmitting ? 'Signing Up...' : 'Subscribe'}
               </Button>
             </div>
           </form>
