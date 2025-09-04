@@ -3,17 +3,17 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { monitoringService } from "./services/monitoring";
-
 import { llmScannerService } from "./services/llmScanner";
-
 import { plaidEnhancedService } from "./services/plaidEnhancedService";
 import { logIngestionService } from "./services/logIngestionService";
 import { complianceEngine } from "./services/complianceEngine";
 import { discordService } from "./services/discordService";
+import { apiTracker } from "./services/apiTracker";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { registerApiTrackingRoutes } from "./routes/apiTracking";
 import { formatDateTimeEST, getCurrentESTTimestamp } from "./utils/timeUtils";
+import OpenAI from "openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -1061,16 +1061,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Prompt is required" });
       }
 
-      console.log(`🔍 Processing LLM request: ${prompt.substring(0, 50)}...`);
+      console.log(`🔍 Processing real OpenAI request: ${prompt.substring(0, 50)}...`);
 
-      // Simulate LLM response for demo purposes
+      // Make real OpenAI API call
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const startTime = Date.now();
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini", // Latest efficient model
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
+      });
+      const responseTime = Date.now() - startTime;
+      
+      // Track the real API call
+      await apiTracker.trackOpenAICall('/chat/completions', responseTime, completion.usage?.total_tokens);
+      
       const llmResponse = {
-        content: `Demo response for: ${prompt}`,
-        model: "gpt-4",
-        usage: { tokens: 100 }
+        content: completion.choices[0].message.content,
+        model: completion.model,
+        usage: completion.usage
       };
 
-      console.log(`🤖 LLM response generated, now scanning for security...`);
+      console.log(`🤖 Real OpenAI response generated, now scanning for security...`);
 
       // Automatically scan the response
       const scanResult = await llmScannerService.scanResponse({
@@ -1093,9 +1112,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                      "Content blocked by security filter"
       });
     } catch (error: any) {
-      console.error('LLM generation error:', error);
+      console.error('Real OpenAI API error:', error);
       res.status(500).json({ 
-        error: "Failed to generate content",
+        error: "Failed to generate content with OpenAI",
         details: error.message
       });
     }
