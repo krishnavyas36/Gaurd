@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 // import { useWebSocket } from "@/hooks/useWebSocket"; // Disabled - using polling instead
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Bell, User, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock , LogOut
+import { Bell, User as UserIcon, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock , LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -18,6 +18,7 @@ import IncidentLog from "@/components/IncidentLog";
 import CrossApplicationMonitor from "@/components/CrossApplicationMonitor";
 import { formatTimeAgoEST, formatFullDateTimeEST, getCurrentESTString } from "@/lib/timeUtils";
 import { useAuth } from "@/hooks/useAuth";
+import type { User } from "@shared/schema";
 
 interface DashboardData {
   apiSources: any[];
@@ -314,7 +315,7 @@ export default function Dashboard() {
                   />
                 ) : (
                   <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-sm">
-                    <User className="text-white w-4 h-4" />
+                    <UserIcon className="text-white w-4 h-4" />
                   </div>
                 )}
                 <div className="hidden sm:block">
