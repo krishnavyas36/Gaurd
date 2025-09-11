@@ -9,6 +9,7 @@ import { logIngestionService } from "./services/logIngestionService";
 import { complianceEngine } from "./services/complianceEngine";
 import { discordService } from "./services/discordService";
 import { apiTracker } from "./services/apiTracker";
+import { externalApiTracker } from "./services/externalApiTracker";
 import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { registerApiTrackingRoutes } from "./routes/apiTracking";
@@ -1097,7 +1098,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Automatically scan the response
       const scanResult = await llmScannerService.scanResponse({
-        content: llmResponse.content,
+        content: llmResponse.content || "",
         metadata: {
           model: llmResponse.model,
           type,
@@ -1487,6 +1488,233 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register API tracking routes
   registerApiTrackingRoutes(app);
+
+  // ===============================================
+  // CROSS-APPLICATION API MONITORING ENDPOINTS
+  // ===============================================
+
+  // Enhanced webhook monitoring for external applications
+  app.post("/api/external/webhook", async (req, res) => {
+    try {
+      console.log(`📨 Enhanced webhook received from external application`);
+      
+      const webhookData = {
+        webhookType: req.body.webhook_type || 'unknown',
+        webhookCode: req.body.webhook_code || 'unknown',
+        itemId: req.body.item_id,
+        requestId: req.body.request_id,
+        metadata: {
+          ...req.body,
+          receivedAt: new Date().toISOString(),
+          headers: req.headers,
+          ip: req.ip || req.connection.remoteAddress
+        }
+      };
+
+      // Track the webhook via external API tracker
+      const tracked = await externalApiTracker.trackViaWebhook(webhookData);
+      
+      console.log(`✅ External webhook tracked: ${tracked.applicationSource} -> ${tracked.endpoint}`);
+      
+      res.json({ 
+        success: true, 
+        tracked: true,
+        callId: tracked.id,
+        timestamp: tracked.timestamp
+      });
+    } catch (error: any) {
+      console.error('Error processing external webhook:', error);
+      res.status(500).json({ 
+        error: "Failed to process webhook",
+        details: error.message
+      });
+    }
+  });
+
+  // Request correlation endpoint for tracking API calls via request IDs
+  app.post("/api/external/correlate", async (req, res) => {
+    try {
+      const { requestId, endpoint, applicationHint, timestamp } = req.body;
+      
+      if (!requestId || !endpoint) {
+        return res.status(400).json({ 
+          error: "requestId and endpoint are required" 
+        });
+      }
+
+      console.log(`🔗 Correlating external API call: ${requestId} -> ${endpoint}`);
+
+      // Track via correlation
+      const tracked = await externalApiTracker.trackViaCorrelation({
+        requestId,
+        endpoint,
+        timestamp: timestamp ? new Date(timestamp) : new Date(),
+        applicationHint
+      });
+
+      console.log(`✅ API call correlation tracked: ${tracked.applicationSource}`);
+      
+      res.json({
+        success: true,
+        correlated: true,
+        callId: tracked.id,
+        applicationSource: tracked.applicationSource
+      });
+    } catch (error: any) {
+      console.error('Error correlating external API call:', error);
+      res.status(500).json({
+        error: "Failed to correlate API call",
+        details: error.message
+      });
+    }
+  });
+
+  // Manual external API call tracking
+  app.post("/api/external/track", async (req, res) => {
+    try {
+      const callData = {
+        requestId: req.body.requestId,
+        applicationSource: req.body.applicationSource || 'manual_entry',
+        endpoint: req.body.endpoint,
+        method: req.body.method || 'POST',
+        clientId: req.body.clientId,
+        responseTime: req.body.responseTime,
+        statusCode: req.body.statusCode,
+        metadata: req.body.metadata,
+        tracked_via: 'manual' as const
+      };
+
+      console.log(`📊 Manual tracking of external API call: ${callData.applicationSource} -> ${callData.endpoint}`);
+
+      const tracked = await externalApiTracker.trackExternalApiCall(callData);
+      
+      res.json({
+        success: true,
+        tracked: true,
+        callId: tracked.id,
+        message: `Successfully tracked API call from ${tracked.applicationSource}`
+      });
+    } catch (error: any) {
+      console.error('Error manually tracking external API call:', error);
+      res.status(500).json({
+        error: "Failed to track API call",
+        details: error.message
+      });
+    }
+  });
+
+  // Get cross-application monitoring summary
+  app.get("/api/external/summary", async (req, res) => {
+    try {
+      const date = req.query.date as string;
+      const summary = await externalApiTracker.getCrossAppMonitoringSummary(date);
+      
+      res.json(summary);
+    } catch (error: any) {
+      console.error('Error getting cross-app summary:', error);
+      res.status(500).json({
+        error: "Failed to get monitoring summary",
+        details: error.message
+      });
+    }
+  });
+
+  // Get external API calls by application source
+  app.get("/api/external/calls/:applicationSource", async (req, res) => {
+    try {
+      const { applicationSource } = req.params;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      const calls = await storage.getExternalApiCallsBySource(applicationSource, limit);
+      
+      res.json({
+        applicationSource,
+        totalCalls: calls.length,
+        calls: calls.map(call => ({
+          ...call,
+          timestamp: formatDateTimeEST(call.timestamp || new Date())
+        }))
+      });
+    } catch (error: any) {
+      console.error('Error getting external API calls:', error);
+      res.status(500).json({
+        error: "Failed to get external API calls",
+        details: error.message
+      });
+    }
+  });
+
+  // Get request correlations for analysis
+  app.get("/api/external/correlations", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const correlations = await storage.getRequestCorrelations(limit);
+      
+      res.json({
+        totalCorrelations: correlations.length,
+        pendingProcessing: correlations.filter(c => !c.processed).length,
+        correlations: correlations.map(correlation => ({
+          ...correlation,
+          timestamp: formatDateTimeEST(correlation.timestamp || new Date())
+        }))
+      });
+    } catch (error: any) {
+      console.error('Error getting request correlations:', error);
+      res.status(500).json({
+        error: "Failed to get request correlations",
+        details: error.message
+      });
+    }
+  });
+
+  // Mark correlation as processed
+  app.patch("/api/external/correlations/:id/processed", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.markCorrelationProcessed(id);
+      
+      if (success) {
+        res.json({ success: true, message: 'Correlation marked as processed' });
+      } else {
+        res.status(404).json({ error: 'Correlation not found' });
+      }
+    } catch (error: any) {
+      console.error('Error marking correlation as processed:', error);
+      res.status(500).json({
+        error: "Failed to update correlation",
+        details: error.message
+      });
+    }
+  });
+
+  // Get cross-application usage statistics
+  app.get("/api/external/stats", async (req, res) => {
+    try {
+      const date = req.query.date as string;
+      const stats = await storage.getCrossAppUsageStats(date);
+      
+      const summary = {
+        date: date || new Date().toISOString().split('T')[0],
+        totalApplications: stats.length,
+        totalCalls: stats.reduce((sum, stat) => sum + (stat.totalCalls || 0), 0),
+        totalErrors: stats.reduce((sum, stat) => sum + (stat.errorCalls || 0), 0),
+        totalSecurityViolations: stats.reduce((sum, stat) => sum + (stat.securityViolations || 0), 0),
+        applications: stats.map(stat => ({
+          ...stat,
+          errorRate: (stat.errorCalls || 0) / (stat.totalCalls || 1) * 100,
+          healthScore: Math.max(0, 100 - (stat.errorCalls || 0) * 10 - (stat.securityViolations || 0) * 20)
+        }))
+      };
+      
+      res.json(summary);
+    } catch (error: any) {
+      console.error('Error getting cross-app stats:', error);
+      res.status(500).json({
+        error: "Failed to get cross-application stats",
+        details: error.message
+      });
+    }
+  });
 
   return httpServer;
 }
