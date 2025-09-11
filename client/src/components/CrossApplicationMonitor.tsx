@@ -158,18 +158,18 @@ export default function CrossApplicationMonitor() {
                       {app.applicationSource.replace(/_/g, ' ')}
                     </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
-                      {app.totalCalls} calls • {app.errorRate.toFixed(1)}% error rate
+                      {app.totalCalls || 0} calls • {(app.errorRate || 0).toFixed(1)}% error rate
                     </div>
-                    {app.securityViolations > 0 && (
+                    {(app.securityViolations || 0) > 0 && (
                       <div className="text-sm text-red-600 dark:text-red-400 flex items-center space-x-1 mt-1">
                         <AlertTriangle className="h-3 w-3" />
-                        <span>{app.securityViolations} security violations</span>
+                        <span>{app.securityViolations || 0} security violations</span>
                       </div>
                     )}
                   </div>
                   <div className="text-right">
-                    <div className={`text-lg font-bold ${getHealthScoreColor(app.healthScore)}`}>
-                      {app.healthScore}%
+                    <div className={`text-lg font-bold ${getHealthScoreColor(app.healthScore || 0)}`}>
+                      {app.healthScore || 0}%
                     </div>
                     <div className="text-xs text-slate-500 dark:text-slate-400">Health Score</div>
                   </div>
