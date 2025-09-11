@@ -99,6 +99,44 @@ export const monitoringStats = pgTable("monitoring_stats", {
   llmResponsesBlocked: integer("llm_responses_blocked").default(0),
 });
 
+// Cross-application API tracking table
+export const externalApiCalls = pgTable("external_api_calls", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requestId: text("request_id"), // Plaid request_id for correlation
+  applicationSource: text("application_source").notNull(), // Which app made the call
+  endpoint: text("endpoint").notNull(),
+  method: text("method").default("POST"),
+  clientId: text("client_id"), // Plaid client_id if available
+  responseTime: integer("response_time"), // ms
+  statusCode: integer("status_code"),
+  timestamp: timestamp("timestamp").defaultNow(),
+  metadata: jsonb("metadata"),
+  tracked_via: text("tracked_via").notNull(), // webhook, proxy, correlation
+});
+
+// Cross-application usage analytics
+export const crossAppUsageStats = pgTable("cross_app_usage_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  date: text("date").notNull(), // YYYY-MM-DD
+  applicationSource: text("application_source").notNull(),
+  totalCalls: integer("total_calls").default(0),
+  successfulCalls: integer("successful_calls").default(0),
+  errorCalls: integer("error_calls").default(0),
+  avgResponseTime: integer("avg_response_time").default(0),
+  securityViolations: integer("security_violations").default(0),
+});
+
+// Request correlation tracking
+export const requestCorrelations = pgTable("request_correlations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requestId: text("request_id").notNull(),
+  correlationId: text("correlation_id"), // For grouping related requests
+  applicationSource: text("application_source").notNull(),
+  endpoint: text("endpoint").notNull(),
+  timestamp: timestamp("timestamp").defaultNow(),
+  processed: boolean("processed").default(false),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -143,6 +181,20 @@ export const insertMonitoringStatsSchema = createInsertSchema(monitoringStats).o
   id: true,
 });
 
+export const insertExternalApiCallSchema = createInsertSchema(externalApiCalls).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertCrossAppUsageStatsSchema = createInsertSchema(crossAppUsageStats).omit({
+  id: true,
+});
+
+export const insertRequestCorrelationSchema = createInsertSchema(requestCorrelations).omit({
+  id: true,
+  timestamp: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
@@ -168,3 +220,12 @@ export type InsertIncident = z.infer<typeof insertIncidentSchema>;
 
 export type MonitoringStats = typeof monitoringStats.$inferSelect;
 export type InsertMonitoringStats = z.infer<typeof insertMonitoringStatsSchema>;
+
+export type ExternalApiCall = typeof externalApiCalls.$inferSelect;
+export type InsertExternalApiCall = z.infer<typeof insertExternalApiCallSchema>;
+
+export type CrossAppUsageStats = typeof crossAppUsageStats.$inferSelect;
+export type InsertCrossAppUsageStats = z.infer<typeof insertCrossAppUsageStatsSchema>;
+
+export type RequestCorrelation = typeof requestCorrelations.$inferSelect;
+export type InsertRequestCorrelation = z.infer<typeof insertRequestCorrelationSchema>;
