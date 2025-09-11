@@ -7,8 +7,12 @@ import {
   type LlmViolation, type InsertLlmViolation,
   type Incident, type InsertIncident,
   type MonitoringStats, type InsertMonitoringStats,
+  type ExternalApiCall, type InsertExternalApiCall,
+  type CrossAppUsageStats, type InsertCrossAppUsageStats,
+  type RequestCorrelation, type InsertRequestCorrelation,
   users, apiSources, alerts, complianceRules, dataClassifications,
-  llmViolations, incidents, monitoringStats
+  llmViolations, incidents, monitoringStats, externalApiCalls,
+  crossAppUsageStats, requestCorrelations
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -59,6 +63,23 @@ export interface IStorage {
   getMonitoringStats(date?: string): Promise<MonitoringStats | undefined>;
   createOrUpdateMonitoringStats(stats: InsertMonitoringStats): Promise<MonitoringStats>;
   getTodaysStats(): Promise<MonitoringStats>;
+
+  // Cross-Application API Tracking
+  getExternalApiCalls(limit?: number): Promise<ExternalApiCall[]>;
+  getExternalApiCallsBySource(applicationSource: string, limit?: number): Promise<ExternalApiCall[]>;
+  createExternalApiCall(call: InsertExternalApiCall): Promise<ExternalApiCall>;
+  getExternalApiCallsByRequestId(requestId: string): Promise<ExternalApiCall[]>;
+
+  // Cross-Application Usage Stats
+  getCrossAppUsageStats(date?: string): Promise<CrossAppUsageStats[]>;
+  getCrossAppUsageStatsBySource(applicationSource: string, date?: string): Promise<CrossAppUsageStats | undefined>;
+  createOrUpdateCrossAppUsageStats(stats: InsertCrossAppUsageStats): Promise<CrossAppUsageStats>;
+
+  // Request Correlation Tracking
+  getRequestCorrelations(limit?: number): Promise<RequestCorrelation[]>;
+  createRequestCorrelation(correlation: InsertRequestCorrelation): Promise<RequestCorrelation>;
+  getCorrelationsByRequestId(requestId: string): Promise<RequestCorrelation[]>;
+  markCorrelationProcessed(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -70,6 +91,9 @@ export class MemStorage implements IStorage {
   private llmViolations: Map<string, LlmViolation> = new Map();
   private incidents: Map<string, Incident> = new Map();
   private monitoringStats: Map<string, MonitoringStats> = new Map();
+  private externalApiCalls: Map<string, ExternalApiCall> = new Map();
+  private crossAppUsageStats: Map<string, CrossAppUsageStats> = new Map();
+  private requestCorrelations: Map<string, RequestCorrelation> = new Map();
 
   constructor() {
     this.initializeDefaultData();
@@ -232,7 +256,7 @@ export class MemStorage implements IStorage {
   // Alerts
   async getAlerts(limit: number = 50): Promise<Alert[]> {
     const alerts = Array.from(this.alerts.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
     return alerts.slice(0, limit);
   }
 
@@ -316,7 +340,7 @@ export class MemStorage implements IStorage {
   // Data Classifications
   async getDataClassifications(limit: number = 20): Promise<DataClassification[]> {
     const classifications = Array.from(this.dataClassifications.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
     return classifications.slice(0, limit);
   }
 
@@ -351,7 +375,7 @@ export class MemStorage implements IStorage {
   // LLM Violations
   async getLlmViolations(limit: number = 10): Promise<LlmViolation[]> {
     const violations = Array.from(this.llmViolations.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
     return violations.slice(0, limit);
   }
 
@@ -370,7 +394,7 @@ export class MemStorage implements IStorage {
   // Incidents
   async getIncidents(limit: number = 10): Promise<Incident[]> {
     const incidents = Array.from(this.incidents.values())
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
     return incidents.slice(0, limit);
   }
 
@@ -416,7 +440,18 @@ export class MemStorage implements IStorage {
       return updated;
     } else {
       const id = randomUUID();
-      const newStats: MonitoringStats = { ...stats, id, date: targetDate };
+      const newStats: MonitoringStats = { 
+        ...stats, 
+        id, 
+        date: targetDate,
+        totalApiCalls: stats.totalApiCalls ?? 0,
+        alertsGenerated: stats.alertsGenerated ?? 0,
+        complianceScore: stats.complianceScore ?? 100,
+        sensitiveDataDetected: stats.sensitiveDataDetected ?? 0,
+        llmResponsesScanned: stats.llmResponsesScanned ?? 0,
+        llmResponsesFlagged: stats.llmResponsesFlagged ?? 0,
+        llmResponsesBlocked: stats.llmResponsesBlocked ?? 0
+      };
       this.monitoringStats.set(targetDate, newStats);
       return newStats;
     }
@@ -443,6 +478,123 @@ export class MemStorage implements IStorage {
     };
     
     return this.createOrUpdateMonitoringStats(defaultStats);
+  }
+
+  // Cross-Application API Tracking
+  async getExternalApiCalls(limit: number = 50): Promise<ExternalApiCall[]> {
+    const calls = Array.from(this.externalApiCalls.values())
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
+    return calls.slice(0, limit);
+  }
+
+  async getExternalApiCallsBySource(applicationSource: string, limit: number = 50): Promise<ExternalApiCall[]> {
+    const calls = Array.from(this.externalApiCalls.values())
+      .filter(call => call.applicationSource === applicationSource)
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
+    return calls.slice(0, limit);
+  }
+
+  async createExternalApiCall(call: InsertExternalApiCall): Promise<ExternalApiCall> {
+    const id = randomUUID();
+    const newCall: ExternalApiCall = {
+      ...call,
+      id,
+      timestamp: new Date(),
+      requestId: call.requestId || null,
+      method: call.method || null,
+      clientId: call.clientId || null,
+      responseTime: call.responseTime || null,
+      statusCode: call.statusCode || null,
+      metadata: call.metadata || null
+    };
+    this.externalApiCalls.set(id, newCall);
+    return newCall;
+  }
+
+  async getExternalApiCallsByRequestId(requestId: string): Promise<ExternalApiCall[]> {
+    return Array.from(this.externalApiCalls.values())
+      .filter(call => call.requestId === requestId);
+  }
+
+  // Cross-Application Usage Stats
+  async getCrossAppUsageStats(date?: string): Promise<CrossAppUsageStats[]> {
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    return Array.from(this.crossAppUsageStats.values())
+      .filter(stats => stats.date === targetDate);
+  }
+
+  async getCrossAppUsageStatsBySource(applicationSource: string, date?: string): Promise<CrossAppUsageStats | undefined> {
+    const targetDate = date || new Date().toISOString().split('T')[0];
+    const key = `${targetDate}-${applicationSource}`;
+    return this.crossAppUsageStats.get(key);
+  }
+
+  async createOrUpdateCrossAppUsageStats(stats: InsertCrossAppUsageStats): Promise<CrossAppUsageStats> {
+    const targetDate = stats.date || new Date().toISOString().split('T')[0];
+    const key = `${targetDate}-${stats.applicationSource}`;
+    const existing = this.crossAppUsageStats.get(key);
+
+    if (existing) {
+      const updated: CrossAppUsageStats = {
+        ...existing,
+        ...stats,
+        totalCalls: stats.totalCalls ?? existing.totalCalls ?? 0,
+        successfulCalls: stats.successfulCalls ?? existing.successfulCalls ?? 0,
+        errorCalls: stats.errorCalls ?? existing.errorCalls ?? 0,
+        avgResponseTime: stats.avgResponseTime ?? existing.avgResponseTime ?? 0,
+        securityViolations: stats.securityViolations ?? existing.securityViolations ?? 0
+      };
+      this.crossAppUsageStats.set(key, updated);
+      return updated;
+    } else {
+      const id = randomUUID();
+      const newStats: CrossAppUsageStats = {
+        ...stats,
+        id,
+        date: targetDate,
+        totalCalls: stats.totalCalls ?? 0,
+        successfulCalls: stats.successfulCalls ?? 0,
+        errorCalls: stats.errorCalls ?? 0,
+        avgResponseTime: stats.avgResponseTime ?? 0,
+        securityViolations: stats.securityViolations ?? 0
+      };
+      this.crossAppUsageStats.set(key, newStats);
+      return newStats;
+    }
+  }
+
+  // Request Correlation Tracking
+  async getRequestCorrelations(limit: number = 100): Promise<RequestCorrelation[]> {
+    const correlations = Array.from(this.requestCorrelations.values())
+      .sort((a, b) => (b.timestamp ? new Date(b.timestamp) : new Date()).getTime() - (a.timestamp ? new Date(a.timestamp) : new Date()).getTime());
+    return correlations.slice(0, limit);
+  }
+
+  async createRequestCorrelation(correlation: InsertRequestCorrelation): Promise<RequestCorrelation> {
+    const id = randomUUID();
+    const newCorrelation: RequestCorrelation = {
+      ...correlation,
+      id,
+      timestamp: new Date(),
+      correlationId: correlation.correlationId || null,
+      processed: correlation.processed ?? false
+    };
+    this.requestCorrelations.set(id, newCorrelation);
+    return newCorrelation;
+  }
+
+  async getCorrelationsByRequestId(requestId: string): Promise<RequestCorrelation[]> {
+    return Array.from(this.requestCorrelations.values())
+      .filter(correlation => correlation.requestId === requestId);
+  }
+
+  async markCorrelationProcessed(id: string): Promise<boolean> {
+    const existing = this.requestCorrelations.get(id);
+    if (!existing) return false;
+    
+    const updated: RequestCorrelation = { ...existing, processed: true };
+    this.requestCorrelations.set(id, updated);
+    return true;
   }
 }
 
