@@ -15,6 +15,7 @@ import ComplianceRules from "@/components/ComplianceRules";
 import DataClassification from "@/components/DataClassification";
 import LLMResponseMonitor from "@/components/LLMResponseMonitor";
 import IncidentLog from "@/components/IncidentLog";
+import CrossApplicationMonitor from "@/components/CrossApplicationMonitor";
 import { formatTimeAgoEST, formatFullDateTimeEST, getCurrentESTString } from "@/lib/timeUtils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -401,7 +402,7 @@ export default function Dashboard() {
         </div>
 
         {/* LLM Response Monitoring and Incident Log */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
             <LLMResponseMonitor 
               violations={dashboardData.llmViolations}
@@ -412,6 +413,9 @@ export default function Dashboard() {
             <IncidentLog incidents={dashboardData.incidents} />
           </div>
         </div>
+
+        {/* Cross-Application API Monitoring */}
+        <CrossApplicationMonitor />
       </main>
     </div>
   );
