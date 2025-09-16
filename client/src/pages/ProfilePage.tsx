@@ -27,16 +27,7 @@ export default function ProfilePage() {
     });
   };
 
-  const handleLogout = () => {
-    toast({
-      title: "Logging out",
-      description: "You will be redirected to the login page.",
-    });
-    // In a real app, this would handle logout logic
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 1000);
-  };
+  // Logout functionality removed: No authentication required
 
   const permissions = [
     "View Security Dashboard",
@@ -64,15 +55,7 @@ export default function ProfilePage() {
             </p>
           </div>
           
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            data-testid="logout-button"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
+          {/* Logout button removed: No authentication required */}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -163,7 +146,7 @@ export default function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div>
-                  <Label>Last Login</Label>
+                  <Label>Last Profile Update</Label>
                   <p className="text-sm font-medium mt-1">
                     {new Date(profile.lastLogin).toLocaleString()}
                   </p>
@@ -184,16 +167,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div>
-                  <Label>Two-Factor Authentication</Label>
-                  <div className="flex items-center justify-between mt-1">
-                    <Badge className="bg-green-100 text-green-800">Enabled</Badge>
-                    <Button size="sm" variant="outline" data-testid="manage-2fa-button">
-                      <Key className="h-4 w-4 mr-2" />
-                      Manage
-                    </Button>
-                  </div>
-                </div>
+                {/* Two-Factor Authentication UI removed: No authentication required */}
               </div>
             </CardContent>
           </Card>

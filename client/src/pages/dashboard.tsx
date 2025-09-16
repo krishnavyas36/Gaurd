@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 // import { useWebSocket } from "@/hooks/useWebSocket"; // Disabled - using polling instead
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Bell, User as UserIcon, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock , LogOut
+import { Bell, User as UserIcon, Filter, Settings, Shield, Activity, Search, Zap, X, AlertTriangle, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -17,8 +17,7 @@ import LLMResponseMonitor from "@/components/LLMResponseMonitor";
 import IncidentLog from "@/components/IncidentLog";
 import CrossApplicationMonitor from "@/components/CrossApplicationMonitor";
 import { formatTimeAgoEST, formatFullDateTimeEST, getCurrentESTString } from "@/lib/timeUtils";
-import { useAuth } from "@/hooks/useAuth";
-import type { User } from "@shared/schema";
+// Authentication removed - using demo user
 
 interface DashboardData {
   apiSources: any[];
@@ -32,7 +31,15 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  // Demo user for display purposes
+  const user = {
+    id: "demo-user",
+    email: "admin@walletgyde.com",
+    firstName: "Security",
+    lastName: "Admin",
+    profileImageUrl: null
+  };
+  const isAuthenticated = true;
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [activeAlertCount, setActiveAlertCount] = useState(0);
   const [isMonitoring, setIsMonitoring] = useState(true);
@@ -326,15 +333,7 @@ export default function Dashboard() {
                     {user?.lastName ? `${user.firstName} ${user.lastName}` : 'Administrator'}
                   </p>
                 </div>
-                <Button
-                  onClick={() => window.location.href = '/api/logout'}
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  data-testid="button-logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
+                {/* Logout button removed - no authentication needed */}
               </div>
             </div>
           </div>

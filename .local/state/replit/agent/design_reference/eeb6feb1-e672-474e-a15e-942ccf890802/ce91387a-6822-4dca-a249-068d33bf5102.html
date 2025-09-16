@@ -1,0 +1,625 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WalletGyde Security Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#1976D2',
+                        secondary: '#388E3C',
+                        warning: '#F57C00',
+                        error: '#D32F2F',
+                        surface: '#FFFFFF',
+                        background: '#FAFAFA',
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-background font-inter text-gray-900">
+    <!-- @COMPONENT: SecurityAgentDashboard -->
+    <div class="min-h-screen bg-background">
+        <!-- Header Navigation -->
+        <!-- @COMPONENT: HeaderNavigation -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-shield-alt text-primary text-xl"></i>
+                            <h1 class="text-xl font-semibold text-gray-900">WalletGyde Security Agent</h1>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- @COMPONENT: AlertCounter -->
+                        <div class="relative">
+                            <button class="p-2 text-gray-400 hover:text-gray-600 transition-colors" data-event="click:toggleNotifications">
+                                <i class="fas fa-bell text-lg"></i>
+                                <span class="absolute -top-1 -right-1 h-5 w-5 bg-error text-white text-xs rounded-full flex items-center justify-center">3</span>
+                            </button>
+                        </div>
+                        <!-- @END_COMPONENT: AlertCounter -->
+                        
+                        <!-- @COMPONENT: UserProfile -->
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                                <span class="text-white text-sm font-medium">JD</span>
+                            </div>
+                            <span class="text-sm font-medium text-gray-700" data-bind="user.name">John Doe</span>
+                        </div>
+                        <!-- @END_COMPONENT: UserProfile -->
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- @END_COMPONENT: HeaderNavigation -->
+
+        <!-- Main Dashboard Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Status Overview Cards -->
+            <!-- @COMPONENT: StatusOverview -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- API Monitoring Status -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">API Monitoring</p>
+                            <p class="text-2xl font-semibold text-secondary" data-bind="apiMonitoring.status">Active</p>
+                        </div>
+                        <div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-satellite-dish text-secondary"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="flex items-center text-secondary">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                <span data-bind="apiMonitoring.sourcesCount">3</span> sources monitored
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Alerts -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Active Alerts</p>
+                            <p class="text-2xl font-semibold text-error" data-bind="alerts.activeCount">3</p>
+                        </div>
+                        <div class="w-10 h-10 bg-error/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-error"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="flex items-center text-error">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                <span data-bind="alerts.increasePercent">12%</span> from yesterday
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compliance Score -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Compliance Score</p>
+                            <p class="text-2xl font-semibold text-secondary" data-bind="compliance.score">98%</p>
+                        </div>
+                        <div class="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shield-check text-secondary"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="flex items-center text-secondary">
+                                <i class="fas fa-arrow-up mr-1"></i>
+                                <span data-bind="compliance.improvement">+2%</span> this week
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Classification -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-gray-600">Sensitive Data Detected</p>
+                            <p class="text-2xl font-semibold text-warning" data-bind="dataClassification.count">24</p>
+                        </div>
+                        <div class="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-eye text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <span class="flex items-center text-gray-600">
+                                <i class="fas fa-clock mr-1"></i>
+                                Last 24 hours
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: StatusOverview -->
+
+            <!-- Real-time Monitoring and Alerts -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- API Activity Monitor -->
+                <!-- @COMPONENT: APIActivityMonitor -->
+                <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">API Activity Monitor</h2>
+                            <div class="flex items-center space-x-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                    <span class="w-2 h-2 bg-secondary rounded-full mr-1.5"></span>
+                                    Live
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <!-- Chart Placeholder -->
+                        <!-- A simple line chart showing API call patterns over time -->
+                        <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center mb-4" data-implementation="Implement real-time chart using Chart.js or similar">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-500">API Activity Chart</p>
+                                <p class="text-sm text-gray-400">Real-time monitoring visualization</p>
+                            </div>
+                        </div>
+
+                        <!-- API Source Breakdown -->
+                        <!-- @MAP: apiSources.map(source => ( -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <span class="font-medium text-gray-900" data-bind="source.name">Plaid API</span>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-sm text-gray-600" data-bind="source.callsToday">1,247 calls today</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                        Normal
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span class="font-medium text-gray-900" data-bind="source.name">OpenAI API</span>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-sm text-gray-600" data-bind="source.callsToday">892 calls today</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
+                                        Elevated
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                    <span class="font-medium text-gray-900" data-bind="source.name">Internal CRM</span>
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-sm text-gray-600" data-bind="source.callsToday">456 calls today</span>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                        Normal
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: APIActivityMonitor -->
+
+                <!-- Recent Alerts -->
+                <!-- @COMPONENT: RecentAlerts -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Recent Alerts</h2>
+                    </div>
+                    <div class="p-6">
+                        <!-- @MAP: recentAlerts.map(alert => ( -->
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-error bg-error/5 p-4 rounded-r-lg">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-circle text-error"></i>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <h4 class="text-sm font-medium text-error" data-bind="alert.title">High Volume API Calls</h4>
+                                        <p class="text-sm text-gray-600 mt-1" data-bind="alert.description">OpenAI API exceeded threshold: 900+ calls in last hour</p>
+                                        <p class="text-xs text-gray-500 mt-2" data-bind="alert.timestamp">2 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border-l-4 border-warning bg-warning/5 p-4 rounded-r-lg">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <h4 class="text-sm font-medium text-warning" data-bind="alert.title">PII Data Detected</h4>
+                                        <p class="text-sm text-gray-600 mt-1" data-bind="alert.description">SSN pattern found in API response logs</p>
+                                        <p class="text-xs text-gray-500 mt-2" data-bind="alert.timestamp">15 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border-l-4 border-warning bg-warning/5 p-4 rounded-r-lg">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-shield-alt text-warning"></i>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <h4 class="text-sm font-medium text-warning" data-bind="alert.title">LLM Response Flagged</h4>
+                                        <p class="text-sm text-gray-600 mt-1" data-bind="alert.description">Financial advice detected in LLM output</p>
+                                        <p class="text-xs text-gray-500 mt-2" data-bind="alert.timestamp">1 hour ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+
+                        <div class="mt-6">
+                            <button class="w-full text-center text-primary hover:text-primary/80 text-sm font-medium transition-colors" data-event="click:viewAllAlerts">
+                                View All Alerts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: RecentAlerts -->
+            </div>
+
+            <!-- Compliance Rules and Data Classification -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Compliance Rules Engine -->
+                <!-- @COMPONENT: ComplianceRulesEngine -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Compliance Rules</h2>
+                            <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors" data-event="click:addRule">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add Rule
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <!-- @MAP: complianceRules.map(rule => ( -->
+                        <div class="space-y-4">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-medium text-gray-900" data-bind="rule.name">API Rate Limit</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                            Active
+                                        </span>
+                                        <button class="text-gray-400 hover:text-gray-600" data-event="click:editRule" data-rule-id="rule.id">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2" data-bind="rule.description">Maximum 1000 API calls per hour per source</p>
+                                <div class="text-xs text-gray-500">
+                                    <span data-bind="rule.lastTriggered">Last triggered: Never</span>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-medium text-gray-900" data-bind="rule.name">PII Detection</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                            Active
+                                        </span>
+                                        <button class="text-gray-400 hover:text-gray-600" data-event="click:editRule" data-rule-id="rule.id">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2" data-bind="rule.description">Scan for SSN, credit card numbers, and personal identifiers</p>
+                                <div class="text-xs text-gray-500">
+                                    <span data-bind="rule.lastTriggered">Last triggered: 15 min ago</span>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-medium text-gray-900" data-bind="rule.name">GDPR Consent</h3>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                                            Active
+                                        </span>
+                                        <button class="text-gray-400 hover:text-gray-600" data-event="click:editRule" data-rule-id="rule.id">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2" data-bind="rule.description">Verify consent documentation for EU user data processing</p>
+                                <div class="text-xs text-gray-500">
+                                    <span data-bind="rule.lastTriggered">Last triggered: 2 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: ComplianceRulesEngine -->
+
+                <!-- Data Classification Summary -->
+                <!-- @COMPONENT: DataClassificationSummary -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">Data Classification</h2>
+                    </div>
+                    <div class="p-6">
+                        <!-- Classification Categories -->
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-exclamation-triangle text-red-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-900">High Risk</h3>
+                                        <p class="text-xs text-gray-600">SSN, Credit Cards</p>
+                                    </div>
+                                </div>
+                                <span class="text-lg font-semibold text-red-600" data-bind="classification.highRisk">8</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-exclamation-circle text-yellow-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-900">Medium Risk</h3>
+                                        <p class="text-xs text-gray-600">Email, Phone Numbers</p>
+                                    </div>
+                                </div>
+                                <span class="text-lg font-semibold text-yellow-600" data-bind="classification.mediumRisk">16</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-info-circle text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-medium text-gray-900">Low Risk</h3>
+                                        <p class="text-xs text-gray-600">Names, Addresses</p>
+                                    </div>
+                                </div>
+                                <span class="text-lg font-semibold text-blue-600" data-bind="classification.lowRisk">45</span>
+                            </div>
+                        </div>
+
+                        <!-- Recent Classifications -->
+                        <div class="mt-6">
+                            <h3 class="text-sm font-medium text-gray-900 mb-3">Recent Detections</h3>
+                            <!-- @MAP: recentClassifications.map(item => ( -->
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600" data-bind="item.type">Credit Card Pattern</span>
+                                    <span class="text-xs text-gray-500" data-bind="item.time">2m ago</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600" data-bind="item.type">SSN Pattern</span>
+                                    <span class="text-xs text-gray-500" data-bind="item.time">15m ago</span>
+                                </div>
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-600" data-bind="item.type">Email Address</span>
+                                    <span class="text-xs text-gray-500" data-bind="item.time">1h ago</span>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: DataClassificationSummary -->
+            </div>
+
+            <!-- LLM Response Monitoring and Incident Log -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- LLM Response Scanner -->
+                <!-- @COMPONENT: LLMResponseScanner -->
+                <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">LLM Response Monitor</h2>
+                            <div class="flex items-center space-x-2">
+                                <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors" data-event="click:configureScanning">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    Configure
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <!-- Scanning Statistics -->
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <div class="text-center">
+                                <div class="text-2xl font-semibold text-gray-900" data-bind="llmStats.totalScanned">1,247</div>
+                                <div class="text-sm text-gray-600">Responses Scanned</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-semibold text-warning" data-bind="llmStats.flagged">23</div>
+                                <div class="text-sm text-gray-600">Flagged Responses</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-semibold text-error" data-bind="llmStats.blocked">5</div>
+                                <div class="text-sm text-gray-600">Blocked Responses</div>
+                            </div>
+                        </div>
+
+                        <!-- Recent LLM Violations -->
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900 mb-4">Recent Violations</h3>
+                            <!-- @MAP: llmViolations.map(violation => ( -->
+                            <div class="space-y-3">
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-2 mb-2">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-error/10 text-error">
+                                                    Financial Advice
+                                                </span>
+                                                <span class="text-xs text-gray-500" data-bind="violation.timestamp">1 hour ago</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600" data-bind="violation.snippet">"You should invest in tech stocks for better returns..."</p>
+                                            <div class="mt-2 flex items-center space-x-2">
+                                                <span class="text-xs text-gray-500">Action:</span>
+                                                <span class="text-xs text-error font-medium" data-bind="violation.action">Response Blocked</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-2 mb-2">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning">
+                                                    Unverified Data
+                                                </span>
+                                                <span class="text-xs text-gray-500" data-bind="violation.timestamp">3 hours ago</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600" data-bind="violation.snippet">"Based on insider information, this company will..."</p>
+                                            <div class="mt-2 flex items-center space-x-2">
+                                                <span class="text-xs text-gray-500">Action:</span>
+                                                <span class="text-xs text-warning font-medium" data-bind="violation.action">Response Rewritten</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: LLMResponseScanner -->
+
+                <!-- Incident Log -->
+                <!-- @COMPONENT: IncidentLog -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Incident Log</h2>
+                            <button class="text-primary hover:text-primary/80 text-sm font-medium" data-event="click:exportIncidents">
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <!-- @MAP: incidents.map(incident => ( -->
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-error bg-error/5 p-3 rounded-r-lg">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-error" data-bind="incident.severity">Critical</span>
+                                    <span class="text-xs text-gray-500" data-bind="incident.timestamp">2m ago</span>
+                                </div>
+                                <p class="text-sm text-gray-700" data-bind="incident.description">API rate limit exceeded for OpenAI</p>
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800" data-bind="incident.status">
+                                        Investigating
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="border-l-4 border-warning bg-warning/5 p-3 rounded-r-lg">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-warning" data-bind="incident.severity">Warning</span>
+                                    <span class="text-xs text-gray-500" data-bind="incident.timestamp">15m ago</span>
+                                </div>
+                                <p class="text-sm text-gray-700" data-bind="incident.description">PII data detected in logs</p>
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary" data-bind="incident.status">
+                                        Resolved
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="border-l-4 border-blue-500 bg-blue-50 p-3 rounded-r-lg">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-medium text-blue-600" data-bind="incident.severity">Info</span>
+                                    <span class="text-xs text-gray-500" data-bind="incident.timestamp">1h ago</span>
+                                </div>
+                                <p class="text-sm text-gray-700" data-bind="incident.description">Weekly compliance report generated</p>
+                                <div class="mt-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary/10 text-secondary" data-bind="incident.status">
+                                        Completed
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+
+                        <div class="mt-6">
+                            <button class="w-full text-center text-primary hover:text-primary/80 text-sm font-medium transition-colors" data-event="click:viewAllIncidents">
+                                View All Incidents
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: IncidentLog -->
+            </div>
+        </main>
+    </div>
+    <!-- @END_COMPONENT: SecurityAgentDashboard -->
+
+    <script>
+        // TODO: Implement real-time data updates, alert management, and configuration handlers
+        (function() {
+            // Simulated real-time updates
+            function updateLiveData() {
+                // TODO: Implement WebSocket connection for real-time updates
+                // TODO: Update API call counts, alert statuses, and compliance scores
+                console.log('Live data update simulation');
+            }
+
+            // Alert notification handlers
+            function setupAlertHandlers() {
+                // TODO: Implement alert acknowledgment and dismissal
+                // TODO: Connect to Slack API for alert forwarding
+                // TODO: Setup email notification triggers
+            }
+
+            // Configuration management
+            function setupConfigurationHandlers() {
+                // TODO: Implement compliance rule CRUD operations
+                // TODO: Add LLM scanning configuration interface
+                // TODO: Setup n8n workflow integration
+            }
+
+            // Initialize dashboard
+            document.addEventListener('DOMContentLoaded', function() {
+                setupAlertHandlers();
+                setupConfigurationHandlers();
+                
+                // Start simulated live updates
+                setInterval(updateLiveData, 30000); // Update every 30 seconds
+            });
+        })();
+    </script>
+</body>
+</html>

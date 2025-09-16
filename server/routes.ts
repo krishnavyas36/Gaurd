@@ -14,14 +14,13 @@ import { insertAlertSchema, insertComplianceRuleSchema, insertIncidentSchema } f
 import { nanoid } from "nanoid";
 import { registerApiTrackingRoutes } from "./routes/apiTracking";
 import { formatDateTimeEST, getCurrentESTTimestamp } from "./utils/timeUtils";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+// Authentication removed - no longer needed
 import OpenAI from "openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
-  // Setup authentication middleware
-  await setupAuth(app);
+  // Authentication removed - no longer needed
 
   // WebSocket setup for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
@@ -1474,17 +1473,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }, 5 * 60 * 1000); // 5 minutes
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Auth routes removed: No authentication required
 
   // Register API tracking routes
   registerApiTrackingRoutes(app);
