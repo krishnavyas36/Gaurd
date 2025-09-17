@@ -73,7 +73,7 @@ export default function APIActivityMonitor({ apiSources }: APIActivityMonitorPro
           {apiSources.map((source, index) => (
             <div 
               key={source.id || index} 
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              className="flex items-center justify-between p-3 bg-slate-800 rounded-lg"
               data-testid={`api-source-${source.name?.toLowerCase().replace(/\s+/g, '-') || index}`}
             >
               <div className="flex items-center space-x-3">
@@ -83,18 +83,17 @@ export default function APIActivityMonitor({ apiSources }: APIActivityMonitorPro
                 </span>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600" data-testid={`text-call-count-${index}`}>
+                <span className="text-sm text-white/70" data-testid={`text-call-count-${index}`}> 
                   {source.callsToday || 0} calls today
                 </span>
-                <span className={getStatusBadge(source.alertStatus || 'normal')} data-testid={`status-badge-${index}`}>
+                <span className={getStatusBadge(source.alertStatus || 'normal')} data-testid={`status-badge-${index}`}> 
                   {getStatusText(source.alertStatus || 'normal')}
                 </span>
               </div>
             </div>
           ))}
-          
           {apiSources.length === 0 && (
-            <div className="text-center py-8 text-gray-500" data-testid="no-api-sources">
+            <div className="text-center py-8 text-white/70" data-testid="no-api-sources">
               No API sources configured
             </div>
           )}

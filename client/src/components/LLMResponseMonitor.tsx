@@ -345,13 +345,13 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
             <div className="text-sm text-white/70">Responses Scanned</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-semibold text-warning" data-testid="text-flagged-responses">
+            <div className="text-2xl font-semibold text-white" data-testid="text-flagged-responses">
               {stats?.llmResponsesFlagged || 0}
             </div>
             <div className="text-sm text-white/70">Flagged Responses</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-semibold text-error" data-testid="text-blocked-responses">
+            <div className="text-2xl font-semibold text-white" data-testid="text-blocked-responses">
               {stats?.llmResponsesBlocked || 0}
             </div>
             <div className="text-sm text-white/70">Blocked Responses</div>
