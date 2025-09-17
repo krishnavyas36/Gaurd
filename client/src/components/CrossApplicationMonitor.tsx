@@ -67,9 +67,9 @@ export default function CrossApplicationMonitor() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Activity className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-500 dark:text-slate-400">No external application activity detected</p>
-            <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">
+            <Activity className="h-12 w-12 text-white/30 mx-auto mb-4" />
+            <p className="text-white/70">No external application activity detected</p>
+            <p className="text-sm text-white/70 mt-2">
               Configure webhooks or use the API to start tracking cross-application usage
             </p>
           </div>
@@ -146,7 +146,7 @@ export default function CrossApplicationMonitor() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Shield className="h-5 w-5 text-emerald-500" />
-              <span>External Applications</span>
+              <span className="text-white">External Applications</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -184,7 +184,7 @@ export default function CrossApplicationMonitor() {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="h-5 w-5 text-blue-500" />
-              <span>Recent External API Calls</span>
+              <span className="text-white">Recent External API Calls</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -225,26 +225,21 @@ export default function CrossApplicationMonitor() {
           <div className="flex items-start space-x-4">
             <ExternalLink className="h-6 w-6 text-blue-500 mt-1" />
             <div>
-              <h3 className="font-semibold text-white mb-2">
-                Cross-Application Monitoring Active
-              </h3>
-              <p className="text-sm text-white/70 mb-4">
-                Tracking API usage across multiple applications using the same credentials. 
-                Configure webhooks in your external applications to automatically monitor their API activity.
-              </p>
+              <h3 className="font-semibold text-white mb-2">Cross-Application Monitoring Active</h3>
+              <p className="text-sm text-white/70 mb-4">Tracking API usage across multiple applications using the same credentials. Configure webhooks in your external applications to automatically monitor their API activity.</p>
               <div className="space-y-2">
-                <div className="text-sm">
-                  <strong>Webhook URL:</strong> <code className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-xs">
+                <div className="text-sm text-white/70">
+                  <strong className="text-white">Webhook URL:</strong> <code className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-xs text-white/80">
                     POST /api/external/webhook
                   </code>
                 </div>
-                <div className="text-sm">
-                  <strong>Manual Tracking:</strong> <code className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-xs">
+                <div className="text-sm text-white/70">
+                  <strong className="text-white">Manual Tracking:</strong> <code className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-xs text-white/80">
                     POST /api/external/track
                   </code>
                 </div>
-                <div className="text-sm">
-                  <strong>Request Correlation:</strong> <code className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-xs">
+                <div className="text-sm text-white/70">
+                  <strong className="text-white">Request Correlation:</strong> <code className="bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-xs text-white/80">
                     POST /api/external/correlate
                   </code>
                 </div>

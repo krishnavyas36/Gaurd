@@ -164,7 +164,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                         <span className={`text-xs font-medium ${
                           scanSettings.enableFinancialAdviceDetection 
                             ? 'text-emerald-600 dark:text-emerald-400' 
-                            : 'text-slate-600 dark:text-slate-400'
+                            : 'text-white/70'
                         }`}>
                               {scanSettings.enableFinancialAdviceDetection ? 'ON' : 'OFF'}
                         </span>
@@ -198,7 +198,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                         <span className={`text-xs font-medium ${
                           scanSettings.enablePIIDetection 
                             ? 'text-emerald-600 dark:text-emerald-400' 
-                            : 'text-slate-600 dark:text-slate-400'
+                            : 'text-white/70'
                         }`}>
                               {scanSettings.enablePIIDetection ? 'ON' : 'OFF'}
                         </span>
