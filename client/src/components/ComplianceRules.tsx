@@ -55,7 +55,7 @@ export default function ComplianceRules({ rules }: ComplianceRulesProps) {
     <Card className="border border-slate-200/60 bg-white/70 backdrop-blur-sm shadow-sm dark:bg-slate-800/70 dark:border-slate-700/60" data-testid="compliance-rules">
       <div className="p-4 border-b border-slate-200/60 dark:border-slate-700/60">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Compliance Rules</h2>
+          <h2 className="text-lg font-semibold text-white">Compliance Rules</h2>
           <span className="text-sm text-slate-500 dark:text-slate-400">{rules.length} rules configured</span>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function ComplianceRules({ rules }: ComplianceRulesProps) {
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
-                  <h3 className="text-sm font-medium text-slate-900 dark:text-white" data-testid={`text-rule-name-${index}`}>
+                  <h3 className="text-sm font-medium text-white" data-testid={`text-rule-name-${index}`}> 
                     {rule.name}
                   </h3>
                   <Badge 

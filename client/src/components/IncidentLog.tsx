@@ -74,28 +74,13 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
   };
 
   const getSeverityTextColor = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return 'text-error';
-      case 'warning':
-        return 'text-warning';
-      default:
-        return 'text-blue-600';
-    }
+    // All severities use white text for dark mode visibility
+    return 'text-white';
   };
 
   const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'resolved':
-      case 'completed':
-        return 'bg-secondary/10 text-secondary';
-      case 'investigating':
-        return 'bg-gray-100 text-gray-800';
-      case 'open':
-        return 'bg-error/10 text-error';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+    // All statuses use white text for dark mode visibility
+    return 'bg-secondary/10 text-white';
   };
 
   const getStatusLabel = (status: string) => {
@@ -114,34 +99,13 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
   };
 
   const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'warning':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'high':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+    // All severities use white text for dark mode visibility
+    return 'bg-error/10 text-white border-error';
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'resolved':
-      case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'investigating':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'open':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+    // All statuses use white text for dark mode visibility
+    return 'bg-secondary/10 text-white border-secondary';
   };
 
   const recentIncidents = incidents.slice(0, 5);
@@ -187,12 +151,12 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
     <Card className="border border-gray-200" data-testid="incident-log">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Incident Log</h2>
+          <h2 className="text-lg font-semibold text-white">Incident Log</h2>
           <Button 
             variant="ghost"
             size="sm"
             onClick={handleExportIncidents}
-            className="text-primary hover:text-primary/80 text-sm font-medium flex items-center space-x-2"
+            className="text-white hover:text-white/70 text-sm font-medium flex items-center space-x-2"
             data-testid="button-export-incidents"
           >
             <Download className="h-4 w-4" />
@@ -217,12 +181,12 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
                     {incident.severity.charAt(0).toUpperCase() + incident.severity.slice(1)}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500" data-testid={`text-incident-time-${index}`}>
+                <span className="text-xs text-white/70" data-testid={`text-incident-time-${index}`}> 
                   {formatTimeAgo(incident.timestamp)}
                 </span>
               </div>
               
-              <p className="text-sm text-gray-700 mb-2" data-testid={`text-incident-description-${index}`}>
+              <p className="text-sm text-white/70 mb-2" data-testid={`text-incident-description-${index}`}> 
                 {incident.description}
               </p>
               
@@ -254,10 +218,10 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
           ))}
           
           {recentIncidents.length === 0 && (
-            <div className="text-center py-8 text-gray-500" data-testid="no-incidents">
-              <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+            <div className="text-center py-8 text-white/70" data-testid="no-incidents">
+              <AlertCircle className="h-12 w-12 text-white/30 mx-auto mb-2" />
               <p>No recent incidents</p>
-              <p className="text-sm">All systems operating normally</p>
+              <p className="text-sm text-white/70">All systems operating normally</p>
             </div>
           )}
         </div>
@@ -268,7 +232,7 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
               <DialogTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="w-full text-center text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+                  className="w-full text-center text-white hover:text-white/70 text-sm font-medium transition-colors"
                   data-testid="button-view-all-incidents"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -293,7 +257,7 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
                       <span>Export CSV</span>
                     </Button>
                   </div>
-                  <p id="incidents-dialog-description" className="text-sm text-slate-600 dark:text-slate-400">
+                  <p id="incidents-dialog-description" className="text-sm text-white/70">
                     Complete list of security incidents with details and resolution status
                   </p>
                 </DialogHeader>
@@ -320,7 +284,7 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
                                 {incident.severity?.toUpperCase()}
                               </Badge>
                             </div>
-                            <span className="text-xs text-slate-500 dark:text-slate-400" data-testid={`text-time-${index}`}>
+                            <span className="text-xs text-white/70" data-testid={`text-time-${index}`}> 
                               {formatTimeAgo(incident.timestamp)}
                             </span>
                             <Badge 
@@ -330,19 +294,19 @@ export default function IncidentLog({ incidents }: IncidentLogProps) {
                               {incident.status || 'Open'}
                             </Badge>
                           </div>
-                          <h4 className="font-medium text-slate-900 dark:text-white text-sm mb-1" data-testid={`text-description-${index}`}>
+                          <h4 className="font-medium text-white text-sm mb-1" data-testid={`text-description-${index}`}> 
                             {incident.description}
                           </h4>
                           {incident.source && (
                             <div className="flex items-center space-x-1 mb-2">
-                              <span className="text-xs text-slate-500">Source:</span>
-                              <Badge variant="outline" className="text-xs">
+                              <span className="text-xs text-white/70">Source:</span>
+                              <Badge variant="outline" className="text-xs text-white/70">
                                 {incident.source}
                               </Badge>
                             </div>
                           )}
                           {incident.id && (
-                            <div className="text-xs text-slate-400 font-mono">
+                            <div className="text-xs text-white/50 font-mono">
                               ID: {incident.id}
                             </div>
                           )}

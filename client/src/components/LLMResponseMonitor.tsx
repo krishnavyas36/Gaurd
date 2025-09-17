@@ -75,7 +75,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
       case 'pii_exposure':
         return 'bg-error/10 text-error';
       default:
-        return 'bg-gray-100 text-gray-800';
+  return 'bg-gray-100 text-white';
     }
   };
 
@@ -101,7 +101,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
       case 'flagged':
         return 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+  return 'bg-gray-100 text-white';
     }
   };
 
@@ -111,7 +111,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
     <Card className="border border-gray-200" data-testid="llm-response-monitor">
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">LLM Response Monitor</h2>
+          <h2 className="text-lg font-semibold text-white">LLM Response Monitor</h2>
           <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
             <DialogTrigger asChild>
               <Button 
@@ -127,14 +127,14 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
             <DialogContent className="max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl backdrop-blur-sm" aria-describedby="config-dialog-description">
               <DialogHeader>
                 <DialogTitle>LLM Scanner Configuration</DialogTitle>
-                <p id="config-dialog-description" className="text-sm text-slate-600 dark:text-slate-400">
+                <p id="config-dialog-description" className="text-sm text-white/70">
                   Configure LLM response scanning settings and test detection capabilities
                 </p>
               </DialogHeader>
               <div className="space-y-6 pt-4">
                 {/* Scanning Settings */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-slate-900 dark:text-white">Detection Settings</h3>
+                  <h3 className="text-sm font-medium text-white">Detection Settings</h3>
                   
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -166,7 +166,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             ? 'text-emerald-600 dark:text-emerald-400' 
                             : 'text-slate-600 dark:text-slate-400'
                         }`}>
-                          {scanSettings.enableFinancialAdviceDetection ? 'ON' : 'OFF'}
+                              {scanSettings.enableFinancialAdviceDetection ? 'ON' : 'OFF'}
                         </span>
                       </div>
                     </div>
@@ -200,7 +200,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             ? 'text-emerald-600 dark:text-emerald-400' 
                             : 'text-slate-600 dark:text-slate-400'
                         }`}>
-                          {scanSettings.enablePIIDetection ? 'ON' : 'OFF'}
+                              {scanSettings.enablePIIDetection ? 'ON' : 'OFF'}
                         </span>
                       </div>
                     </div>
@@ -234,7 +234,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             ? 'text-emerald-600 dark:text-emerald-400' 
                             : 'text-slate-600 dark:text-slate-400'
                         }`}>
-                          {scanSettings.enableUnverifiedDataDetection ? 'ON' : 'OFF'}
+                              {scanSettings.enableUnverifiedDataDetection ? 'ON' : 'OFF'}
                         </span>
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             ? 'text-emerald-600 dark:text-emerald-400' 
                             : 'text-slate-600 dark:text-slate-400'
                         }`}>
-                          {scanSettings.autoBlockViolations ? 'ON' : 'OFF'}
+                              {scanSettings.autoBlockViolations ? 'ON' : 'OFF'}
                         </span>
                       </div>
                     </div>
@@ -277,7 +277,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
 
                 {/* Test Functions */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-slate-900 dark:text-white">Test Scanner</h3>
+                  <h3 className="text-sm font-medium text-white">Test Scanner</h3>
                   <div className="grid grid-cols-1 gap-2">
                     <Button
                       variant="outline"
@@ -339,28 +339,28 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
         {/* Scanning Statistics */}
         <div className="grid grid-cols-3 gap-6 mb-6" data-testid="llm-stats">
           <div className="text-center">
-            <div className="text-2xl font-semibold text-gray-900" data-testid="text-total-scanned">
+            <div className="text-2xl font-semibold text-white" data-testid="text-total-scanned">
               {stats?.llmResponsesScanned || 0}
             </div>
-            <div className="text-sm text-gray-600">Responses Scanned</div>
+            <div className="text-sm text-white/70">Responses Scanned</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-warning" data-testid="text-flagged-responses">
               {stats?.llmResponsesFlagged || 0}
             </div>
-            <div className="text-sm text-gray-600">Flagged Responses</div>
+            <div className="text-sm text-white/70">Flagged Responses</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-semibold text-error" data-testid="text-blocked-responses">
               {stats?.llmResponsesBlocked || 0}
             </div>
-            <div className="text-sm text-gray-600">Blocked Responses</div>
+            <div className="text-sm text-white/70">Blocked Responses</div>
           </div>
         </div>
 
         {/* Recent LLM Violations */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-4">Recent Violations</h3>
+          <h3 className="text-sm font-medium text-white mb-4">Recent Violations</h3>
           <div className="space-y-3" data-testid="violations-list">
             {recentViolations.map((violation, index) => (
               <div 
@@ -377,15 +377,15 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                       >
                         {getViolationLabel(violation.violationType)}
                       </Badge>
-                      <span className="text-xs text-gray-500" data-testid={`text-violation-time-${index}`}>
-                        {formatTimeAgo(violation.timestamp)}
+                      <span className="text-xs text-white/70" data-testid={`text-violation-time-${index}`}> 
+                          {formatTimeAgo(violation.timestamp)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2" data-testid={`text-violation-content-${index}`}>
+                    <p className="text-sm text-white/70 mb-2" data-testid={`text-violation-content-${index}`}> 
                       "{violation.content?.substring(0, 100)}..."
                     </p>
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">Action:</span>
+                      <span className="text-xs text-white/70">Action:</span>
                       <Badge 
                         className={getActionBadgeColor(violation.action)}
                         data-testid={`badge-violation-action-${index}`}
@@ -402,8 +402,8 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
             ))}
             
             {recentViolations.length === 0 && (
-              <div className="text-center py-8 text-gray-500" data-testid="no-violations">
-                <Eye className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+              <div className="text-center py-8 text-white/70" data-testid="no-violations">
+                <Eye className="h-12 w-12 text-white/30 mx-auto mb-2" />
                 <p>No recent violations</p>
                 <p className="text-sm">LLM responses are operating within guidelines</p>
               </div>

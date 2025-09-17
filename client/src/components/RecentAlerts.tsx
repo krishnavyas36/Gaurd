@@ -63,7 +63,7 @@ export default function RecentAlerts({ alerts }: RecentAlertsProps) {
   return (
     <Card className="border border-gray-200" data-testid="recent-alerts">
       <div className="p-6 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Recent Alerts</h2>
+  <h2 className="text-lg font-semibold text-white">Recent Alerts</h2>
       </div>
       <CardContent className="p-6">
         <div className="space-y-4" data-testid="alerts-list">
@@ -81,11 +81,11 @@ export default function RecentAlerts({ alerts }: RecentAlertsProps) {
                   <h4 className={`text-sm font-medium ${getAlertTextColor(alert.severity)}`} data-testid={`text-alert-title-${index}`}>
                     {alert.title}
                   </h4>
-                  <p className="text-sm text-gray-600 mt-1" data-testid={`text-alert-description-${index}`}>
+                  <p className="text-sm text-white mt-1" data-testid={`text-alert-description-${index}`}>
                     {alert.description}
                   </p>
                   <div className="flex items-center justify-between mt-2">
-                    <p className="text-xs text-gray-500" data-testid={`text-alert-time-${index}`}>
+                    <p className="text-xs text-white/70" data-testid={`text-alert-time-${index}`}>
                       {formatTimeAgo(alert.timestamp)}
                     </p>
                     {alert.status === 'active' && (
@@ -107,8 +107,8 @@ export default function RecentAlerts({ alerts }: RecentAlertsProps) {
           ))}
           
           {recentAlerts.length === 0 && (
-            <div className="text-center py-8 text-gray-500" data-testid="no-alerts">
-              <Shield className="h-12 w-12 text-gray-300 mx-auto mb-2" />
+            <div className="text-center py-8 text-white/70" data-testid="no-alerts">
+              <Shield className="h-12 w-12 text-white/30 mx-auto mb-2" />
               <p>No recent alerts</p>
               <p className="text-sm">All systems operating normally</p>
             </div>

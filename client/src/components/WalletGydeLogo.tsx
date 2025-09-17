@@ -6,7 +6,7 @@ interface WalletGydeLogoProps {
 }
 
 export default function WalletGydeLogo({ className = "", variant = 'light' }: WalletGydeLogoProps) {
-  const textColor = variant === 'light' ? 'text-white' : 'text-gray-900';
+  const textColor = 'text-white';
   
   return (
     <div className={`flex items-center space-x-2 ${className}`}>

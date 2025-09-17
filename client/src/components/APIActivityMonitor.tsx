@@ -78,7 +78,7 @@ export default function APIActivityMonitor({ apiSources }: APIActivityMonitorPro
             >
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${getStatusColor(source.alertStatus || 'normal')}`}></div>
-                <span className="font-medium text-gray-900" data-testid={`text-source-name-${index}`}>
+                <span className="font-medium text-white" data-testid={`text-source-name-${index}`}> 
                   {source.name || 'Unknown Source'}
                 </span>
               </div>

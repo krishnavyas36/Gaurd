@@ -43,7 +43,7 @@ export default function CrossApplicationMonitor() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <ExternalLink className="h-5 w-5 text-blue-500" />
-            <span>Cross-Application API Monitoring</span>
+            <span className="text-white">Cross-Application API Monitoring</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -62,7 +62,7 @@ export default function CrossApplicationMonitor() {
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <ExternalLink className="h-5 w-5 text-blue-500" />
-            <span>Cross-Application API Monitoring</span>
+            <span className="text-white">Cross-Application API Monitoring</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -98,7 +98,7 @@ export default function CrossApplicationMonitor() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <ExternalLink className="h-5 w-5 text-blue-500" />
-              <span>Cross-Application API Monitoring</span>
+              <span className="text-white">Cross-Application API Monitoring</span>
             </div>
             <Badge className={getHealthScoreBadgeColor(crossAppData.overallHealthScore)}>
               Health: {crossAppData.overallHealthScore}%
@@ -109,31 +109,31 @@ export default function CrossApplicationMonitor() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-slate-50 rounded-lg dark:bg-slate-800">
               <BarChart3 className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white" data-testid="text-total-applications">
+              <div className="text-2xl font-bold text-white" data-testid="text-total-applications">
                 {crossAppData.totalApplications}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">External Apps</div>
+              <div className="text-sm text-white/70">External Apps</div>
             </div>
             <div className="text-center p-4 bg-slate-50 rounded-lg dark:bg-slate-800">
               <Activity className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white" data-testid="text-total-calls">
+              <div className="text-2xl font-bold text-white" data-testid="text-total-calls">
                 {crossAppData.totalExternalCalls}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">API Calls</div>
+              <div className="text-sm text-white/70">API Calls</div>
             </div>
             <div className="text-center p-4 bg-slate-50 rounded-lg dark:bg-slate-800">
               <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white" data-testid="text-security-violations">
+              <div className="text-2xl font-bold text-white" data-testid="text-security-violations">
                 {crossAppData.totalSecurityViolations}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Security Violations</div>
+              <div className="text-sm text-white/70">Security Violations</div>
             </div>
             <div className="text-center p-4 bg-slate-50 rounded-lg dark:bg-slate-800">
               <Zap className="h-8 w-8 text-purple-500 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-slate-900 dark:text-white" data-testid="text-pending-correlations">
+              <div className="text-2xl font-bold text-white" data-testid="text-pending-correlations">
                 {crossAppData.pendingCorrelations}
               </div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Pending Correlations</div>
+              <div className="text-sm text-white/70">Pending Correlations</div>
             </div>
           </div>
         </CardContent>
@@ -154,10 +154,10 @@ export default function CrossApplicationMonitor() {
               {crossAppData.applications.map((app, index) => (
                 <div key={app.applicationSource} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg dark:bg-slate-800" data-testid={`row-application-${index}`}>
                   <div>
-                    <div className="font-medium text-slate-900 dark:text-white">
+                    <div className="font-medium text-white">
                       {app.applicationSource.replace(/_/g, ' ')}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-white/70">
                       {app.totalCalls || 0} calls • {(app.errorRate || 0).toFixed(1)}% error rate
                     </div>
                     {(app.securityViolations || 0) > 0 && (
@@ -171,7 +171,7 @@ export default function CrossApplicationMonitor() {
                     <div className={`text-lg font-bold ${getHealthScoreColor(app.healthScore || 0)}`}>
                       {app.healthScore || 0}%
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Health Score</div>
+                    <div className="text-xs text-white/70">Health Score</div>
                   </div>
                 </div>
               ))}
@@ -192,15 +192,15 @@ export default function CrossApplicationMonitor() {
               {crossAppData.recentCalls.slice(0, 5).map((call, index) => (
                 <div key={call.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg dark:bg-slate-800" data-testid={`row-external-call-${index}`}>
                   <div>
-                    <div className="font-medium text-slate-900 dark:text-white">
+                    <div className="font-medium text-white">
                       {call.endpoint}
                     </div>
-                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-sm text-white/70">
                       {call.applicationSource} • via {call.tracked_via}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
+                    <div className="text-sm text-white/70">
                       {formatTimeAgoEST(call.timestamp)}
                     </div>
                     <Badge variant="outline" className="text-xs">
@@ -210,7 +210,7 @@ export default function CrossApplicationMonitor() {
                 </div>
               ))}
               {crossAppData.recentCalls.length === 0 && (
-                <div className="text-center py-4 text-slate-500 dark:text-slate-400">
+                <div className="text-center py-4 text-white/70">
                   No recent external API calls
                 </div>
               )}
@@ -225,10 +225,10 @@ export default function CrossApplicationMonitor() {
           <div className="flex items-start space-x-4">
             <ExternalLink className="h-6 w-6 text-blue-500 mt-1" />
             <div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
+              <h3 className="font-semibold text-white mb-2">
                 Cross-Application Monitoring Active
               </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+              <p className="text-sm text-white/70 mb-4">
                 Tracking API usage across multiple applications using the same credentials. 
                 Configure webhooks in your external applications to automatically monitor their API activity.
               </p>
