@@ -17,16 +17,16 @@ export default function APIActivityMonitor({ apiSources }: APIActivityMonitorPro
 
   const getStatusBadge = (alertStatus: string) => {
     const baseClasses = "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium";
-    
     switch (alertStatus) {
       case 'critical':
-        return `${baseClasses} bg-error/10 text-error`;
+        return `${baseClasses} bg-red-700/20 text-red-400 border border-red-500`;
       case 'elevated':
-        return `${baseClasses} bg-warning/10 text-warning`;
+        return `${baseClasses} bg-orange-700/20 text-orange-400 border border-orange-500`;
       case 'warning':
-        return `${baseClasses} bg-warning/10 text-warning`;
+        return `${baseClasses} bg-yellow-700/20 text-yellow-300 border border-yellow-500`;
       default:
-        return `${baseClasses} bg-secondary/10 text-secondary`;
+        // Normal: make it visually distinct and readable in dark mode
+        return `${baseClasses} bg-green-700/20 text-green-300 border border-green-500`;
     }
   };
 

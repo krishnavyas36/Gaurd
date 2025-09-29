@@ -765,6 +765,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Unified webhook ingestion endpoint for API activity (n8n, external automations)
+  app.post("/api/webhook/activity", async (req, res) => {
+    try {
+      const rawPayload = Array.isArray((req.body as any)?.events)
+        ? (req.body as any).events
+        : Array.isArray(req.body)
+        ? (req.body as any)
+        : [req.body];
+
+      const events = rawPayload.filter((item: any) => {
+        return item && typeof item === "object" && !Array.isArray(item) && Object.keys(item).length > 0;
+      });
+
+      if (events.length === 0) {
+        return res.status(400).json({
+          error: "No webhook events provided",
+        });
+      }
+
+      const ingestedResults: Array<Record<string, any>> = [];
+
+      for (const event of events) {
+        const sourceCandidate =
+          event.source ||
+          event.service ||
+          event.application ||
+          event.provider ||
+          event.integration ||
+          event.channel;
+
+        const source =
+          typeof sourceCandidate === "string" && sourceCandidate.trim().length > 0
+            ? sourceCandidate.trim()
+            : undefined;
+
+        if (!source) {
+          throw new Error("Webhook event missing source identifier");
+        }
+
+        const endpointCandidate =
+          event.fullUrl || event.url || event.endpoint || event.path || event.route || event.target;
+        const endpoint =
+          typeof endpointCandidate === "string" && endpointCandidate.trim().length > 0
+            ? endpointCandidate.trim()
+            : "/unknown";
+
+        const methodRaw = event.method || event.httpMethod || event.verb;
+        const method = methodRaw ? String(methodRaw).toUpperCase() : "GET";
+
+        const statusCodeRaw = event.statusCode ?? event.status ?? event.httpStatus;
+        let statusCode: number | undefined;
+        if (typeof statusCodeRaw === "number") {
+          statusCode = statusCodeRaw;
+        } else if (statusCodeRaw) {
+          const parsedStatus = Number.parseInt(statusCodeRaw, 10);
+          statusCode = Number.isNaN(parsedStatus) ? undefined : parsedStatus;
+        }
+
+        const responseTimeRaw =
+          event.responseTime ?? event.latency ?? event.durationMs ?? event.duration ?? event.elapsedMs;
+        let responseTime: number | undefined;
+        if (typeof responseTimeRaw === "number") {
+          responseTime = responseTimeRaw;
+        } else if (responseTimeRaw) {
+          const parsedLatency = Number.parseFloat(responseTimeRaw);
+          responseTime = Number.isNaN(parsedLatency) ? undefined : parsedLatency;
+        }
+
+        const requestId =
+          event.requestId ||
+          event.request_id ||
+          event.traceId ||
+          event.trace_id ||
+          event.id ||
+          event.correlationId ||
+          event.correlation_id ||
+          undefined;
+
+        const baseMetadata =
+          event.metadata && typeof event.metadata === "object" && !Array.isArray(event.metadata)
+            ? event.metadata
+            : {};
+
+        const metadata: Record<string, any> = {
+          ...baseMetadata,
+          eventType: event.eventType || event.type || event.name,
+          statusText: event.statusText || event.responseStatus,
+          environment: event.environment || (req.body as any)?.environment,
+          initiator: event.user || event.actor || event.requestor,
+          userAgent: event.userAgent || event.headers?.["user-agent"] || req.headers["user-agent"],
+          requestIp: event.ip || event.clientIp || req.ip || req.headers["x-forwarded-for"],
+          ingestedVia: "webhook",
+          receivedAt: new Date().toISOString(),
+        };
+
+        const rawSample = event.payload ?? event.data ?? event.raw ?? event.body;
+        if (rawSample) {
+          metadata.rawSample =
+            typeof rawSample === "string" && rawSample.length > 512
+              ? `${rawSample.slice(0, 512)}...`
+              : rawSample;
+        }
+
+        const trackerSummary = await apiTracker.trackApiCall(source, endpoint, responseTime, metadata);
+
+        const externalRecord = await externalApiTracker.trackExternalApiCall({
+          requestId,
+          applicationSource: source,
+          endpoint,
+          method,
+          statusCode,
+          responseTime,
+          metadata,
+          tracked_via: "webhook",
+        });
+
+        ingestedResults.push({
+          source,
+          endpoint,
+          callId: externalRecord.id,
+          apiCallsToday: trackerSummary.callsToday,
+          statusCode: externalRecord.statusCode,
+        });
+      }
+
+      const uniqueSources = Array.from(new Set(ingestedResults.map(result => result.source)));
+      console.log(`Webhook activity ingested for sources: ${uniqueSources.join(", ") || "unknown"}`);
+
+      res.json({
+        success: true,
+        processed: ingestedResults.length,
+        results: ingestedResults,
+      });
+    } catch (error: any) {
+      console.error("Error processing webhook activity:", error);
+      res.status(500).json({
+        error: "Failed to ingest webhook activity",
+        details: error?.message || "Unknown error",
+      });
+    }
+  });
   // FastAPI log ingestion endpoint
   app.post("/api/logs/fastapi", async (req, res) => {
     try {
@@ -1707,3 +1848,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+
+
+

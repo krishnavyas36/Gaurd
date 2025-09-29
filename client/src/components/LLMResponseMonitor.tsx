@@ -115,32 +115,33 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
           <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
             <DialogTrigger asChild>
               <Button 
-                variant="outline" 
+                variant="outline"
                 size="sm"
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 border-emerald-500 text-emerald-500 dark:text-emerald-300 dark:border-emerald-400 hover:bg-emerald-500/10 focus:ring-emerald-500"
                 data-testid="button-configure-scanning"
+                style={{ fontWeight: 600, letterSpacing: '0.03em' }}
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4 mr-1 text-emerald-500 dark:text-emerald-300" />
                 <span>Configure</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl backdrop-blur-sm" aria-describedby="config-dialog-description">
+            <DialogContent className="max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-emerald-700 shadow-xl backdrop-blur-sm" aria-describedby="config-dialog-description">
               <DialogHeader>
-                <DialogTitle>LLM Scanner Configuration</DialogTitle>
-                <p id="config-dialog-description" className="text-sm text-white/70">
+                <DialogTitle className="text-emerald-600 dark:text-emerald-400">LLM Scanner Configuration</DialogTitle>
+                <p id="config-dialog-description" className="text-sm text-slate-700 dark:text-slate-300">
                   Configure LLM response scanning settings and test detection capabilities
                 </p>
               </DialogHeader>
               <div className="space-y-6 pt-4">
                 {/* Scanning Settings */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-white">Detection Settings</h3>
+                  <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 tracking-wide">Detection Settings</h3>
                   
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <AlertTriangle className="h-4 w-4 text-red-500" />
-                        <span className="text-sm">Financial Advice Detection</span>
+                        <span className="text-sm text-slate-800 dark:text-slate-200 font-medium">Financial Advice Detection</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -161,10 +162,10 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             `}
                           />
                         </button>
-                        <span className={`text-xs font-medium ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                           scanSettings.enableFinancialAdviceDetection 
-                            ? 'text-emerald-600 dark:text-emerald-400' 
-                            : 'text-white/70'
+                            ? 'bg-emerald-700/20 text-emerald-400 border-emerald-500' 
+                            : 'bg-slate-700/30 text-slate-400 border-slate-500'
                         }`}>
                               {scanSettings.enableFinancialAdviceDetection ? 'ON' : 'OFF'}
                         </span>
@@ -174,7 +175,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Shield className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm">PII Detection</span>
+                        <span className="text-sm text-slate-800 dark:text-slate-200 font-medium">PII Detection</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -195,10 +196,10 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             `}
                           />
                         </button>
-                        <span className={`text-xs font-medium ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                           scanSettings.enablePIIDetection 
-                            ? 'text-emerald-600 dark:text-emerald-400' 
-                            : 'text-white/70'
+                            ? 'bg-emerald-700/20 text-emerald-400 border-emerald-500' 
+                            : 'bg-slate-700/30 text-slate-400 border-slate-500'
                         }`}>
                               {scanSettings.enablePIIDetection ? 'ON' : 'OFF'}
                         </span>
@@ -208,7 +209,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <FileText className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">Unverified Data Detection</span>
+                        <span className="text-sm text-slate-800 dark:text-slate-200 font-medium">Unverified Data Detection</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -229,10 +230,10 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             `}
                           />
                         </button>
-                        <span className={`text-xs font-medium ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                           scanSettings.enableUnverifiedDataDetection 
-                            ? 'text-emerald-600 dark:text-emerald-400' 
-                            : 'text-slate-600 dark:text-slate-400'
+                            ? 'bg-emerald-700/20 text-emerald-400 border-emerald-500' 
+                            : 'bg-slate-700/30 text-slate-400 border-slate-500'
                         }`}>
                               {scanSettings.enableUnverifiedDataDetection ? 'ON' : 'OFF'}
                         </span>
@@ -242,7 +243,7 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <Shield className="h-4 w-4 text-green-500" />
-                        <span className="text-sm">Auto-block Violations</span>
+                        <span className="text-sm text-slate-800 dark:text-slate-200 font-medium">Auto-block Violations</span>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -263,10 +264,10 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
                             `}
                           />
                         </button>
-                        <span className={`text-xs font-medium ${
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
                           scanSettings.autoBlockViolations 
-                            ? 'text-emerald-600 dark:text-emerald-400' 
-                            : 'text-slate-600 dark:text-slate-400'
+                            ? 'bg-emerald-700/20 text-emerald-400 border-emerald-500' 
+                            : 'bg-slate-700/30 text-slate-400 border-slate-500'
                         }`}>
                               {scanSettings.autoBlockViolations ? 'ON' : 'OFF'}
                         </span>
@@ -277,38 +278,36 @@ export default function LLMResponseMonitor({ violations, stats }: LLMResponseMon
 
                 {/* Test Functions */}
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-white">Test Scanner</h3>
+                  <h3 className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 tracking-wide">Test Scanner</h3>
                   <div className="grid grid-cols-1 gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => testLLMResponse.mutate('financial')}
                       disabled={testLLMResponse.isPending}
-                      className="flex items-center space-x-2"
+                      className="flex items-center space-x-2 border-emerald-500 text-emerald-500 dark:text-emerald-300 dark:border-emerald-400 hover:bg-emerald-500/10 focus:ring-emerald-500"
                     >
-                      <TestTube className="h-4 w-4" />
+                      <TestTube className="h-4 w-4 mr-1 text-emerald-500 dark:text-emerald-300" />
                       <span>Test Financial Advice Detection</span>
                     </Button>
-                    
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => testLLMResponse.mutate('pii')}
                       disabled={testLLMResponse.isPending}
-                      className="flex items-center space-x-2"
+                      className="flex items-center space-x-2 border-emerald-500 text-emerald-500 dark:text-emerald-300 dark:border-emerald-400 hover:bg-emerald-500/10 focus:ring-emerald-500"
                     >
-                      <TestTube className="h-4 w-4" />
+                      <TestTube className="h-4 w-4 mr-1 text-emerald-500 dark:text-emerald-300" />
                       <span>Test PII Detection</span>
                     </Button>
-                    
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => testLLMResponse.mutate('unverified')}
                       disabled={testLLMResponse.isPending}
-                      className="flex items-center space-x-2"
+                      className="flex items-center space-x-2 border-emerald-500 text-emerald-500 dark:text-emerald-300 dark:border-emerald-400 hover:bg-emerald-500/10 focus:ring-emerald-500"
                     >
-                      <TestTube className="h-4 w-4" />
+                      <TestTube className="h-4 w-4 mr-1 text-emerald-500 dark:text-emerald-300" />
                       <span>Test Unverified Data Detection</span>
                     </Button>
                   </div>
