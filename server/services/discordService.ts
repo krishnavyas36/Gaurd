@@ -24,7 +24,7 @@ class DiscordService {
   private webhookUrl: string;
 
   constructor() {
-    this.webhookUrl = process.env.DISCORD_WEBHOOK_URL || '';
+    this.webhookUrl = process.env.DISCORD_WEBHOOK_URL || 'https://discord.com/api/webhooks/1411517525451079680/Q5pQvIMEDngkPZoBIr4qHrqWsDbedChArXUIvVKoT3EXflFWRsE2hSkGdsBrdv5AEJSn';
   }
 
   private isConfigured(): boolean {
