@@ -15,10 +15,76 @@ import {
   crossAppUsageStats, requestCorrelations
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import fs from 'fs';
+import path from 'path';
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
+  private reviveDates<T extends Record<string, any>>(item: T): T {
+    if (!item) return item;
+    const keys = ['createdAt', 'updatedAt', 'lastActivity', 'timestamp'];
+    for (const key of keys) {
+      if (item[key]) {
+        const parsed = new Date(item[key]);
+        if (!Number.isNaN(parsed.getTime())) {
+          item[key] = parsed as any;
+        }
+      }
+    }
+    return item;
+  }
+
+  private loadState() {
+    try {
+      const raw = fs.readFileSync(this.dataFilePath, 'utf8');
+      const state = JSON.parse(raw);
+
+      this.users = new Map((state.users || []).map((item: User) => [item.id, this.reviveDates({ ...item })]));
+      this.apiSources = new Map((state.apiSources || []).map((item: ApiSource) => [item.id, this.reviveDates({ ...item })]));
+      this.alerts = new Map((state.alerts || []).map((item: Alert) => [item.id, this.reviveDates({ ...item })]));
+      this.complianceRules = new Map((state.complianceRules || []).map((item: ComplianceRule) => [item.id, this.reviveDates({ ...item })]));
+      this.dataClassifications = new Map((state.dataClassifications || []).map((item: DataClassification) => [item.id, this.reviveDates({ ...item })]));
+      this.llmViolations = new Map((state.llmViolations || []).map((item: LlmViolation) => [item.id, this.reviveDates({ ...item })]));
+      this.incidents = new Map((state.incidents || []).map((item: Incident) => [item.id, this.reviveDates({ ...item })]));
+      this.monitoringStats = new Map((state.monitoringStats || []).map((item: MonitoringStats) => [item.date, { ...item }]));
+      this.externalApiCalls = new Map((state.externalApiCalls || []).map((item: ExternalApiCall) => [item.id, this.reviveDates({ ...item })]));
+      this.crossAppUsageStats = new Map((state.crossAppUsageStats || []).map((item: CrossAppUsageStats) => [`${item.date}-${item.applicationSource}`, { ...item }]));
+      this.requestCorrelations = new Map((state.requestCorrelations || []).map((item: RequestCorrelation) => [item.id, this.reviveDates({ ...item })]));
+    } catch (error) {
+      console.error('Failed to load storage state, falling back to defaults:', error);
+      this.initializeDefaultData();
+      this.persistState();
+    }
+  }
+
+  private persistState() {
+    try {
+      const dir = path.dirname(this.dataFilePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      const state = {
+        users: Array.from(this.users.values()),
+        apiSources: Array.from(this.apiSources.values()),
+        alerts: Array.from(this.alerts.values()),
+        complianceRules: Array.from(this.complianceRules.values()),
+        dataClassifications: Array.from(this.dataClassifications.values()),
+        llmViolations: Array.from(this.llmViolations.values()),
+        incidents: Array.from(this.incidents.values()),
+        monitoringStats: Array.from(this.monitoringStats.values()),
+        externalApiCalls: Array.from(this.externalApiCalls.values()),
+        crossAppUsageStats: Array.from(this.crossAppUsageStats.values()),
+        requestCorrelations: Array.from(this.requestCorrelations.values()),
+      };
+
+      fs.writeFileSync(this.dataFilePath, JSON.stringify(state, null, 2), 'utf8');
+    } catch (error) {
+      console.error('Failed to persist storage state:', error);
+    }
+  }
+
   // Users (for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
@@ -83,6 +149,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private dataFilePath = path.join(process.cwd(), 'server', 'data', 'storageState.json');
   private users: Map<string, User> = new Map();
   private apiSources: Map<string, ApiSource> = new Map();
   private alerts: Map<string, Alert> = new Map();
@@ -96,7 +163,12 @@ export class MemStorage implements IStorage {
   private requestCorrelations: Map<string, RequestCorrelation> = new Map();
 
   constructor() {
-    this.initializeDefaultData();
+    if (fs.existsSync(this.dataFilePath)) {
+      this.loadState();
+    } else {
+      this.initializeDefaultData();
+      this.persistState();
+    }
   }
 
   private initializeDefaultData() {
@@ -185,6 +257,134 @@ export class MemStorage implements IStorage {
     // These will be created only when real security events occur
   }
 
+  private reviveDates<T extends Record<string, any>>(item: T): T {
+    if (!item) return item;
+    const keys = ['createdAt', 'updatedAt', 'lastActivity', 'timestamp'];
+    for (const key of keys) {
+      if (item[key]) {
+        const parsed = new Date(item[key]);
+        if (!Number.isNaN(parsed.getTime())) {
+          item[key] = parsed as any;
+        }
+      }
+    }
+    return item;
+  }
+
+  private loadState() {
+    try {
+      const raw = fs.readFileSync(this.dataFilePath, 'utf8');
+      const state = JSON.parse(raw);
+
+      this.users = new Map((state.users || []).map((item: User) => [item.id, this.reviveDates({ ...item })]));
+      this.apiSources = new Map((state.apiSources || []).map((item: ApiSource) => [item.id, this.reviveDates({ ...item })]));
+      this.alerts = new Map((state.alerts || []).map((item: Alert) => [item.id, this.reviveDates({ ...item })]));
+      this.complianceRules = new Map((state.complianceRules || []).map((item: ComplianceRule) => [item.id, this.reviveDates({ ...item })]));
+      this.dataClassifications = new Map((state.dataClassifications || []).map((item: DataClassification) => [item.id, this.reviveDates({ ...item })]));
+      this.llmViolations = new Map((state.llmViolations || []).map((item: LlmViolation) => [item.id, this.reviveDates({ ...item })]));
+      this.incidents = new Map((state.incidents || []).map((item: Incident) => [item.id, this.reviveDates({ ...item })]));
+      this.monitoringStats = new Map((state.monitoringStats || []).map((item: MonitoringStats) => [item.date, { ...item }]));
+      this.externalApiCalls = new Map((state.externalApiCalls || []).map((item: ExternalApiCall) => [item.id, this.reviveDates({ ...item })]));
+      this.crossAppUsageStats = new Map((state.crossAppUsageStats || []).map((item: CrossAppUsageStats) => [`${item.date}-${item.applicationSource}`, { ...item }]));
+      this.requestCorrelations = new Map((state.requestCorrelations || []).map((item: RequestCorrelation) => [item.id, this.reviveDates({ ...item })]));
+    } catch (error) {
+      console.error('Failed to load storage state, falling back to defaults:', error);
+      this.initializeDefaultData();
+      this.persistState();
+    }
+  }
+
+  private persistState() {
+    try {
+      const dir = path.dirname(this.dataFilePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      const state = {
+        users: Array.from(this.users.values()),
+        apiSources: Array.from(this.apiSources.values()),
+        alerts: Array.from(this.alerts.values()),
+        complianceRules: Array.from(this.complianceRules.values()),
+        dataClassifications: Array.from(this.dataClassifications.values()),
+        llmViolations: Array.from(this.llmViolations.values()),
+        incidents: Array.from(this.incidents.values()),
+        monitoringStats: Array.from(this.monitoringStats.values()),
+        externalApiCalls: Array.from(this.externalApiCalls.values()),
+        crossAppUsageStats: Array.from(this.crossAppUsageStats.values()),
+        requestCorrelations: Array.from(this.requestCorrelations.values()),
+      };
+
+      fs.writeFileSync(this.dataFilePath, JSON.stringify(state, null, 2), 'utf8');
+    } catch (error) {
+      console.error('Failed to persist storage state:', error);
+    }
+  }
+
+  private reviveDates<T extends Record<string, any>>(item: T): T {
+    if (!item) return item;
+    const keys = ['createdAt', 'updatedAt', 'lastActivity', 'timestamp'];
+    for (const key of keys) {
+      if (item[key]) {
+        const parsed = new Date(item[key]);
+        if (!Number.isNaN(parsed.getTime())) {
+          item[key] = parsed as any;
+        }
+      }
+    }
+    return item;
+  }
+
+  private loadState() {
+    try {
+      const raw = fs.readFileSync(this.dataFilePath, 'utf8');
+      const state = JSON.parse(raw);
+
+      this.users = new Map((state.users || []).map((item: User) => [item.id, this.reviveDates({ ...item })]));
+      this.apiSources = new Map((state.apiSources || []).map((item: ApiSource) => [item.id, this.reviveDates({ ...item })]));
+      this.alerts = new Map((state.alerts || []).map((item: Alert) => [item.id, this.reviveDates({ ...item })]));
+      this.complianceRules = new Map((state.complianceRules || []).map((item: ComplianceRule) => [item.id, this.reviveDates({ ...item })]));
+      this.dataClassifications = new Map((state.dataClassifications || []).map((item: DataClassification) => [item.id, this.reviveDates({ ...item })]));
+      this.llmViolations = new Map((state.llmViolations || []).map((item: LlmViolation) => [item.id, this.reviveDates({ ...item })]));
+      this.incidents = new Map((state.incidents || []).map((item: Incident) => [item.id, this.reviveDates({ ...item })]));
+      this.monitoringStats = new Map((state.monitoringStats || []).map((item: MonitoringStats) => [item.date, { ...item }]));
+      this.externalApiCalls = new Map((state.externalApiCalls || []).map((item: ExternalApiCall) => [item.id, this.reviveDates({ ...item })]));
+      this.crossAppUsageStats = new Map((state.crossAppUsageStats || []).map((item: CrossAppUsageStats) => [`${item.date}-${item.applicationSource}`, { ...item }]));
+      this.requestCorrelations = new Map((state.requestCorrelations || []).map((item: RequestCorrelation) => [item.id, this.reviveDates({ ...item })]));
+    } catch (error) {
+      console.error('Failed to load storage state, falling back to defaults:', error);
+      this.initializeDefaultData();
+      this.persistState();
+    }
+  }
+
+  private persistState() {
+    try {
+      const dir = path.dirname(this.dataFilePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      const state = {
+        users: Array.from(this.users.values()),
+        apiSources: Array.from(this.apiSources.values()),
+        alerts: Array.from(this.alerts.values()),
+        complianceRules: Array.from(this.complianceRules.values()),
+        dataClassifications: Array.from(this.dataClassifications.values()),
+        llmViolations: Array.from(this.llmViolations.values()),
+        incidents: Array.from(this.incidents.values()),
+        monitoringStats: Array.from(this.monitoringStats.values()),
+        externalApiCalls: Array.from(this.externalApiCalls.values()),
+        crossAppUsageStats: Array.from(this.crossAppUsageStats.values()),
+        requestCorrelations: Array.from(this.requestCorrelations.values()),
+      };
+
+      fs.writeFileSync(this.dataFilePath, JSON.stringify(state, null, 2), 'utf8');
+    } catch (error) {
+      console.error('Failed to persist storage state:', error);
+    }
+  }
+
   // Users (for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
@@ -200,6 +400,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date(),
       };
       this.users.set(userData.id!, updatedUser);
+      this.persistState();
       return updatedUser;
     } else {
       // Create new user
@@ -213,6 +414,7 @@ export class MemStorage implements IStorage {
         updatedAt: new Date(),
       };
       this.users.set(newUser.id, newUser);
+      this.persistState();
       return newUser;
     }
   }
@@ -237,6 +439,7 @@ export class MemStorage implements IStorage {
       alertStatus: source.alertStatus || "normal"
     };
     this.apiSources.set(id, apiSource);
+    this.persistState();
     return apiSource;
   }
 
@@ -246,11 +449,14 @@ export class MemStorage implements IStorage {
     
     const updated: ApiSource = { ...existing, ...updates };
     this.apiSources.set(id, updated);
+    this.persistState();
     return updated;
   }
 
   async deleteApiSource(id: string): Promise<boolean> {
-    return this.apiSources.delete(id);
+    const deleted = this.apiSources.delete(id);
+    if (deleted) this.persistState();
+    return deleted;
   }
 
   // Alerts
@@ -274,6 +480,7 @@ export class MemStorage implements IStorage {
       metadata: alert.metadata || null
     };
     this.alerts.set(id, newAlert);
+    this.persistState();
     return newAlert;
   }
 
@@ -283,23 +490,30 @@ export class MemStorage implements IStorage {
     
     const updated: Alert = { ...existing, ...updates };
     this.alerts.set(id, updated);
+    this.persistState();
     return updated;
   }
 
   async deleteAlert(id: string): Promise<boolean> {
-    return this.alerts.delete(id);
+    const deleted = this.alerts.delete(id);
+    if (deleted) this.persistState();
+    return deleted;
   }
 
   async deleteLlmViolation(id: string): Promise<boolean> {
-    return this.llmViolations.delete(id);
+    const deleted = this.llmViolations.delete(id);
+    if (deleted) this.persistState();
+    return deleted;
   }
 
   async clearAllLlmViolations(): Promise<void> {
     this.llmViolations.clear();
+    this.persistState();
   }
 
   async clearAllAlerts(): Promise<void> {
     this.alerts.clear();
+    this.persistState();
   }
 
   // Compliance Rules
@@ -321,6 +535,7 @@ export class MemStorage implements IStorage {
       isActive: rule.isActive ?? true
     };
     this.complianceRules.set(id, newRule);
+    this.persistState();
     return newRule;
   }
 
@@ -330,11 +545,14 @@ export class MemStorage implements IStorage {
     
     const updated: ComplianceRule = { ...existing, ...updates };
     this.complianceRules.set(id, updated);
+    this.persistState();
     return updated;
   }
 
   async deleteComplianceRule(id: string): Promise<boolean> {
-    return this.complianceRules.delete(id);
+    const deleted = this.complianceRules.delete(id);
+    if (deleted) this.persistState();
+    return deleted;
   }
 
   // Data Classifications
@@ -360,6 +578,7 @@ export class MemStorage implements IStorage {
       content: classification.content || null
     };
     this.dataClassifications.set(id, newClassification);
+    this.persistState();
     return newClassification;
   }
 
@@ -369,6 +588,7 @@ export class MemStorage implements IStorage {
     
     const updated: DataClassification = { ...existing, ...updates };
     this.dataClassifications.set(id, updated);
+    this.persistState();
     return updated;
   }
 
@@ -388,6 +608,7 @@ export class MemStorage implements IStorage {
       metadata: violation.metadata || {}
     };
     this.llmViolations.set(id, newViolation);
+    this.persistState();
     return newViolation;
   }
 
@@ -409,6 +630,7 @@ export class MemStorage implements IStorage {
       status: incident.status || "investigating"
     };
     this.incidents.set(id, newIncident);
+    this.persistState();
     return newIncident;
   }
 
@@ -421,6 +643,7 @@ export class MemStorage implements IStorage {
       updated.resolvedAt = new Date();
     }
     this.incidents.set(id, updated);
+    this.persistState();
     return updated;
   }
 
@@ -437,6 +660,7 @@ export class MemStorage implements IStorage {
     if (existing) {
       const updated: MonitoringStats = { ...existing, ...stats };
       this.monitoringStats.set(targetDate, updated);
+      this.persistState();
       return updated;
     } else {
       const id = randomUUID();
@@ -453,6 +677,7 @@ export class MemStorage implements IStorage {
         llmResponsesBlocked: stats.llmResponsesBlocked ?? 0
       };
       this.monitoringStats.set(targetDate, newStats);
+      this.persistState();
       return newStats;
     }
   }
@@ -508,6 +733,7 @@ export class MemStorage implements IStorage {
       metadata: call.metadata || null
     };
     this.externalApiCalls.set(id, newCall);
+    this.persistState();
     return newCall;
   }
 
@@ -545,6 +771,7 @@ export class MemStorage implements IStorage {
         securityViolations: stats.securityViolations ?? existing.securityViolations ?? 0
       };
       this.crossAppUsageStats.set(key, updated);
+      this.persistState();
       return updated;
     } else {
       const id = randomUUID();
@@ -559,6 +786,7 @@ export class MemStorage implements IStorage {
         securityViolations: stats.securityViolations ?? 0
       };
       this.crossAppUsageStats.set(key, newStats);
+      this.persistState();
       return newStats;
     }
   }
@@ -580,6 +808,7 @@ export class MemStorage implements IStorage {
       processed: correlation.processed ?? false
     };
     this.requestCorrelations.set(id, newCorrelation);
+    this.persistState();
     return newCorrelation;
   }
 
@@ -594,6 +823,7 @@ export class MemStorage implements IStorage {
     
     const updated: RequestCorrelation = { ...existing, processed: true };
     this.requestCorrelations.set(id, updated);
+    this.persistState();
     return true;
   }
 }

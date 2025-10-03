@@ -1,5 +1,6 @@
 import { storage } from '../storage';
 import { monitoringService } from './monitoring';
+import { apiTracker } from './apiTracker';
 import { discordService } from './discordService';
 import fs from 'fs';
 import path from 'path';
@@ -62,6 +63,7 @@ class LogIngestionService {
         userAgent: logData.user_agent,
         ip: logData.client_ip,
         requestId: logData.request_id,
+        endpoint: logData.endpoint || '/openai/usage',
         userId: logData.user_id,
         metadata: {
           headers: logData.headers,
@@ -102,6 +104,7 @@ class LogIngestionService {
         cost: this.calculateOpenAICost(logData.model, logData.usage),
         duration: logData.duration || 0,
         requestId: logData.request_id,
+        endpoint: logData.endpoint || '/openai/usage',
         userId: logData.user_id,
         metadata: {
           temperature: logData.temperature,
@@ -117,6 +120,9 @@ class LogIngestionService {
 
       // Check for security concerns in AI usage
       await this.analyzeOpenAILogSecurity(logEntry);
+
+      // Record usage in API tracker for dashboard metrics
+      await apiTracker.trackOpenAICall(logEntry.endpoint || '/openai/usage', logEntry.duration, logEntry.tokens.total);
 
       // Flush if buffer is full
       if (this.logBuffer.length >= this.maxBufferSize) {
