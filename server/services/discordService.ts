@@ -22,13 +22,21 @@ interface DiscordWebhookPayload {
 
 class DiscordService {
   private webhookUrl: string;
+  private warnedUnconfigured = false;
 
   constructor() {
-    this.webhookUrl = process.env.DISCORD_WEBHOOK_URL || 'https://discord.com/api/webhooks/1411517525451079680/Q5pQvIMEDngkPZoBIr4qHrqWsDbedChArXUIvVKoT3EXflFWRsE2hSkGdsBrdv5AEJSn';
+    this.webhookUrl = process.env.DISCORD_WEBHOOK_URL?.trim() || "";
   }
 
   private isConfigured(): boolean {
-    return !!this.webhookUrl;
+    if (!this.webhookUrl) {
+      if (!this.warnedUnconfigured) {
+        console.warn("Discord webhook URL not configured. Set DISCORD_WEBHOOK_URL to enable notifications.");
+        this.warnedUnconfigured = true;
+      }
+      return false;
+    }
+    return true;
   }
 
   private getColorForSeverity(severity: string): number {

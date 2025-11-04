@@ -1,0 +1,88 @@
+{
+  "users": [],
+  "apiSources": [
+    {
+      "name": "Plaid API",
+      "url": "https://production.plaid.com",
+      "status": "active",
+      "callsToday": 0,
+      "alertStatus": "normal",
+      "id": "36b4b894-a948-41f6-a092-a54a93c4493b",
+      "lastActivity": "2025-10-31T16:28:30.854Z"
+    },
+    {
+      "name": "OpenAI API",
+      "url": "https://api.openai.com",
+      "status": "active",
+      "callsToday": 0,
+      "alertStatus": "normal",
+      "id": "a1876dd0-e276-49a3-b284-d49fe8e6ea18",
+      "lastActivity": "2025-10-31T16:28:30.854Z"
+    }
+  ],
+  "alerts": [],
+  "complianceRules": [
+    {
+      "name": "API Rate Limit",
+      "description": "Maximum 1000 API calls per hour per source",
+      "ruleType": "rate_limit",
+      "config": {
+        "maxCallsPerHour": 1000
+      },
+      "isActive": true,
+      "id": "0b92d893-a28b-4633-997c-9e37a3e916bb",
+      "lastTriggered": null,
+      "createdAt": "2025-10-31T16:28:30.855Z"
+    },
+    {
+      "name": "PII Detection",
+      "description": "Scan for SSN, credit card numbers, and personal identifiers",
+      "ruleType": "pii_detection",
+      "config": {
+        "patterns": [
+          "ssn",
+          "credit_card",
+          "email"
+        ]
+      },
+      "isActive": true,
+      "id": "2583ff44-509e-433c-a4f0-4c883966332e",
+      "lastTriggered": null,
+      "createdAt": "2025-10-31T16:28:30.855Z"
+    },
+    {
+      "name": "GDPR Consent",
+      "description": "Verify consent documentation for EU user data processing",
+      "ruleType": "gdpr_consent",
+      "config": {
+        "requiredFields": [
+          "consent",
+          "purpose"
+        ]
+      },
+      "isActive": true,
+      "id": "70678958-b034-41ed-bd04-59881175a6a7",
+      "lastTriggered": null,
+      "createdAt": "2025-10-31T16:28:30.855Z"
+    }
+  ],
+  "dataClassifications": [],
+  "llmViolations": [],
+  "incidents": [],
+  "monitoringStats": [
+    {
+      "date": "2025-10-31",
+      "totalApiCalls": 0,
+      "alertsGenerated": 0,
+      "complianceScore": 100,
+      "sensitiveDataDetected": 0,
+      "llmResponsesScanned": 0,
+      "llmResponsesFlagged": 0,
+      "llmResponsesBlocked": 0,
+      "id": "b1c4a5cb-7c03-4bd5-b9a0-1b62d7935d75"
+    }
+  ],
+  "externalApiCalls": [],
+  "crossAppUsageStats": [],
+  "requestCorrelations": []
+}

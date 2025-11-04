@@ -16,6 +16,8 @@ import { registerApiTrackingRoutes } from "./routes/apiTracking";
 import { formatDateTimeEST, getCurrentESTTimestamp } from "./utils/timeUtils";
 // Authentication removed - no longer needed
 import OpenAI from "openai";
+import { z } from "zod";
+import { fromZodError } from "zod-validation-error";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -37,6 +39,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   }
+
+  const MAX_FIELD_LENGTH = 512;
+  const MAX_METADATA_DEPTH = 3;
+  const MAX_ARRAY_LENGTH = 25;
+
+  const truncateString = (value: string, limit: number = MAX_FIELD_LENGTH) =>
+    value.length > limit ? `${value.slice(0, limit)}...` : value;
+
+  const sanitizeMetadata = (value: unknown, depth = 0): unknown => {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+    if (depth >= MAX_METADATA_DEPTH) {
+      return "[truncated]";
+    }
+    if (Array.isArray(value)) {
+      return value.slice(0, MAX_ARRAY_LENGTH).map((item) => sanitizeMetadata(item, depth + 1));
+    }
+    if (typeof value === "object") {
+      const result: Record<string, unknown> = {};
+      for (const [key, nestedValue] of Object.entries(value)) {
+        const sanitized = sanitizeMetadata(nestedValue, depth + 1);
+        if (sanitized !== undefined) {
+          result[key] = sanitized;
+        }
+      }
+      return result;
+    }
+    if (typeof value === "string") {
+      return truncateString(value);
+    }
+    if (typeof value === "number" || typeof value === "boolean") {
+      return value;
+    }
+    return undefined;
+  };
+
+  const fastApiLogSchema = z
+    .object({
+      timestamp: z.string().optional(),
+      level: z.enum(["INFO", "WARN", "ERROR", "DEBUG"]).optional(),
+      message: z.string().optional(),
+      method: z.string().min(1),
+      url: z.string().min(1),
+      endpoint: z.string().min(1).optional(),
+      status_code: z.number().int().min(100).max(599).optional(),
+      response_time: z.number().int().min(0).optional(),
+      user_agent: z.string().optional(),
+      client_ip: z.string().optional(),
+      request_id: z.string().optional(),
+      user_id: z.string().optional(),
+      headers: z.record(z.any()).optional(),
+      query_params: z.record(z.any()).optional(),
+      body_size: z.number().int().min(0).optional(),
+    })
+    .passthrough();
+
+  const openAiLogSchema = z
+    .object({
+      timestamp: z.string().optional(),
+      model: z.string().min(1),
+      usage: z
+        .object({
+          prompt_tokens: z.number().int().min(0).optional(),
+          completion_tokens: z.number().int().min(0).optional(),
+          total_tokens: z.number().int().min(0).optional(),
+        })
+        .optional(),
+      duration: z.number().min(0).optional(),
+      request_id: z.string().optional(),
+      endpoint: z.string().optional(),
+      user_id: z.string().optional(),
+      temperature: z.number().optional(),
+      max_tokens: z.number().int().min(0).optional(),
+      finish_reason: z.string().optional(),
+      prompt: z.string().optional(),
+      response: z.string().optional(),
+      metadata: z.record(z.any()).optional(),
+    })
+    .passthrough();
+
+  const webhookEventSchemaBase = z.object({
+      source: z.string().min(1).optional(),
+      service: z.string().min(1).optional(),
+      endpoint: z.string().min(1).optional(),
+      path: z.string().min(1).optional(),
+      method: z.string().min(1).max(10).optional(),
+      statusCode: z.number().int().min(100).max(599).optional(),
+      responseTime: z.number().int().min(0).optional(),
+      requestId: z.string().max(128).optional(),
+      metadata: z.record(z.any()).optional(),
+      eventType: z.string().optional(),
+      statusText: z.string().optional(),
+      environment: z.string().optional(),
+      user: z.string().optional(),
+      actor: z.string().optional(),
+      requestor: z.string().optional(),
+      userAgent: z.string().optional(),
+      ip: z.string().optional(),
+    })
+    .passthrough();
+
+  const webhookEventSchema = webhookEventSchemaBase.superRefine((data, ctx) => {
+    if (!data.source && !data.service) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Either source or service must be provided",
+        path: ["source"],
+      });
+    }
+    if (!data.endpoint && !data.path) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Either endpoint or path must be provided",
+        path: ["endpoint"],
+      });
+    }
+  });
+
+  const webhookPayloadSchema = z.union([
+    webhookEventSchema,
+    z.object({
+      events: z.array(webhookEventSchema).min(1),
+    }),
+  ]);
+
+  const sanitizeOpenAiPayload = (payload: z.infer<typeof openAiLogSchema>) => {
+    const sanitized = { ...payload };
+    if (typeof sanitized.prompt === "string") {
+      sanitized.prompt = truncateString(sanitized.prompt, 1024);
+    }
+    if (typeof sanitized.response === "string") {
+      sanitized.response = truncateString(sanitized.response, 1024);
+    }
+    if (sanitized.metadata) {
+      sanitized.metadata = sanitizeMetadata(sanitized.metadata);
+    }
+    return sanitized;
+  };
+
+  const sanitizeWebhookEvent = (event: z.infer<typeof webhookEventSchema>) => {
+    const sanitized = { ...event };
+    sanitized.source = sanitized.source || sanitized.service || "unknown";
+    delete (sanitized as any).service;
+    sanitized.endpoint = sanitized.endpoint || sanitized.path || "unknown";
+    delete (sanitized as any).path;
+    if (sanitized.requestId && sanitized.requestId.length > MAX_FIELD_LENGTH) {
+      sanitized.requestId = truncateString(sanitized.requestId);
+    }
+    if (sanitized.metadata) {
+      sanitized.metadata = sanitizeMetadata(sanitized.metadata);
+    }
+    if (typeof sanitized.userAgent === "string") {
+      sanitized.userAgent = truncateString(sanitized.userAgent);
+    }
+    if (typeof sanitized.statusText === "string") {
+      sanitized.statusText = truncateString(sanitized.statusText);
+    }
+    return sanitized;
+  };
 
   async function sendDashboardUpdate(ws: WebSocket) {
     try {
@@ -768,112 +930,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Unified webhook ingestion endpoint for API activity (n8n, external automations)
   app.post("/api/webhook/activity", async (req, res) => {
     try {
-      const rawPayload = Array.isArray((req.body as any)?.events)
-        ? (req.body as any).events
-        : Array.isArray(req.body)
-        ? (req.body as any)
-        : [req.body];
+      const parsedPayload = webhookPayloadSchema.safeParse(req.body);
+      if (!parsedPayload.success) {
+        const validation = fromZodError(parsedPayload.error);
+        return res.status(400).json({
+          error: "Invalid webhook payload",
+          details: validation.message,
+        });
+      }
 
-      const events = rawPayload.filter((item: any) => {
-        return item && typeof item === "object" && !Array.isArray(item) && Object.keys(item).length > 0;
-      });
+      const payload = parsedPayload.data;
+      const rawEvents = "events" in payload ? payload.events : [payload];
 
-      if (events.length === 0) {
+      const sanitizedEvents = rawEvents
+        .map((event) => {
+          try {
+            return sanitizeWebhookEvent(event);
+          } catch (err) {
+            console.warn("Dropping webhook event due to sanitization error", err);
+            return null;
+          }
+        })
+        .filter((event): event is NonNullable<typeof event> => Boolean(event));
+
+      if (sanitizedEvents.length === 0) {
         return res.status(400).json({
           error: "No webhook events provided",
+          details: "Expected at least one valid event with source/service and endpoint/path.",
         });
       }
 
       const ingestedResults: Array<Record<string, any>> = [];
 
-      for (const event of events) {
-        const sourceCandidate =
-          event.source ||
-          event.service ||
-          event.application ||
-          event.provider ||
-          event.integration ||
-          event.channel;
-
-        const source =
-          typeof sourceCandidate === "string" && sourceCandidate.trim().length > 0
-            ? sourceCandidate.trim()
-            : undefined;
-
-        if (!source) {
-          throw new Error("Webhook event missing source identifier");
+      for (const event of sanitizedEvents) {
+        if (!event.source || !event.endpoint) {
+          continue;
         }
 
-        const endpointCandidate =
-          event.fullUrl || event.url || event.endpoint || event.path || event.route || event.target;
-        const endpoint =
-          typeof endpointCandidate === "string" && endpointCandidate.trim().length > 0
-            ? endpointCandidate.trim()
-            : "/unknown";
-
-        const methodRaw = event.method || event.httpMethod || event.verb;
-        const method = methodRaw ? String(methodRaw).toUpperCase() : "GET";
-
-        const statusCodeRaw = event.statusCode ?? event.status ?? event.httpStatus;
-        let statusCode: number | undefined;
-        if (typeof statusCodeRaw === "number") {
-          statusCode = statusCodeRaw;
-        } else if (statusCodeRaw) {
-          const parsedStatus = Number.parseInt(statusCodeRaw, 10);
-          statusCode = Number.isNaN(parsedStatus) ? undefined : parsedStatus;
-        }
-
-        const responseTimeRaw =
-          event.responseTime ?? event.latency ?? event.durationMs ?? event.duration ?? event.elapsedMs;
-        let responseTime: number | undefined;
-        if (typeof responseTimeRaw === "number") {
-          responseTime = responseTimeRaw;
-        } else if (responseTimeRaw) {
-          const parsedLatency = Number.parseFloat(responseTimeRaw);
-          responseTime = Number.isNaN(parsedLatency) ? undefined : parsedLatency;
-        }
-
-        const requestId =
-          event.requestId ||
-          event.request_id ||
-          event.traceId ||
-          event.trace_id ||
-          event.id ||
-          event.correlationId ||
-          event.correlation_id ||
-          undefined;
-
-        const baseMetadata =
-          event.metadata && typeof event.metadata === "object" && !Array.isArray(event.metadata)
-            ? event.metadata
-            : {};
+        const method = (event.method || "POST").toUpperCase();
+        const statusCode = event.statusCode ?? 200;
+        const responseTime = event.responseTime ?? 0;
+        const requestId = event.requestId;
 
         const metadata: Record<string, any> = {
-          ...baseMetadata,
-          eventType: event.eventType || event.type || event.name,
-          statusText: event.statusText || event.responseStatus,
-          environment: event.environment || (req.body as any)?.environment,
+          ...(event.metadata as Record<string, unknown> | undefined),
+          eventType: event.eventType,
+          statusText: event.statusText,
+          environment: event.environment,
           initiator: event.user || event.actor || event.requestor,
-          userAgent: event.userAgent || event.headers?.["user-agent"] || req.headers["user-agent"],
-          requestIp: event.ip || event.clientIp || req.ip || req.headers["x-forwarded-for"],
+          userAgent: event.userAgent || req.headers["user-agent"],
+          requestIp: event.ip || req.ip || req.headers["x-forwarded-for"],
           ingestedVia: "webhook",
           receivedAt: new Date().toISOString(),
         };
 
-        const rawSample = event.payload ?? event.data ?? event.raw ?? event.body;
+        const rawSample = (event as any).payload ?? (event as any).data ?? (event as any).raw ?? (event as any).body;
         if (rawSample) {
           metadata.rawSample =
-            typeof rawSample === "string" && rawSample.length > 512
-              ? `${rawSample.slice(0, 512)}...`
+            typeof rawSample === "string" && rawSample.length > MAX_FIELD_LENGTH
+              ? `${rawSample.slice(0, MAX_FIELD_LENGTH)}...`
               : rawSample;
         }
 
-        const trackerSummary = await apiTracker.trackApiCall(source, endpoint, responseTime, metadata);
+        const trackerSummary = await apiTracker.trackApiCall(event.source, event.endpoint, responseTime, metadata);
 
         const externalRecord = await externalApiTracker.trackExternalApiCall({
           requestId,
-          applicationSource: source,
-          endpoint,
+          applicationSource: event.source,
+          endpoint: event.endpoint,
           method,
           statusCode,
           responseTime,
@@ -882,15 +1006,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
 
         ingestedResults.push({
-          source,
-          endpoint,
+          source: event.source,
+          endpoint: event.endpoint,
           callId: externalRecord.id,
           apiCallsToday: trackerSummary.callsToday,
           statusCode: externalRecord.statusCode,
         });
       }
 
-      const uniqueSources = Array.from(new Set(ingestedResults.map(result => result.source)));
+      const uniqueSources = Array.from(new Set(ingestedResults.map((result) => result.source)));
       console.log(`Webhook activity ingested for sources: ${uniqueSources.join(", ") || "unknown"}`);
 
       res.json({
@@ -909,7 +1033,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FastAPI log ingestion endpoint
   app.post("/api/logs/fastapi", async (req, res) => {
     try {
-      await logIngestionService.ingestFastAPILog(req.body);
+      const parsed = fastApiLogSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const validation = fromZodError(parsed.error);
+        return res.status(400).json({
+          error: "Invalid FastAPI log payload",
+          details: validation.message,
+        });
+      }
+
+      const payload = parsed.data;
+      const sanitizedPayload = {
+        ...payload,
+        headers: payload.headers ? sanitizeMetadata(payload.headers) : undefined,
+        query_params: payload.query_params ? sanitizeMetadata(payload.query_params) : undefined,
+      };
+
+      await logIngestionService.ingestFastAPILog(sanitizedPayload);
       res.json({ 
         success: true, 
         message: "FastAPI log ingested successfully",
@@ -927,7 +1067,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OpenAI usage log ingestion endpoint
   app.post("/api/logs/openai", async (req, res) => {
     try {
-      await logIngestionService.ingestOpenAILog(req.body);
+      const parsed = openAiLogSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const validation = fromZodError(parsed.error);
+        return res.status(400).json({
+          error: "Invalid OpenAI log payload",
+          details: validation.message,
+        });
+      }
+
+      const payload = sanitizeOpenAiPayload(parsed.data);
+      await logIngestionService.ingestOpenAILog(payload);
       res.json({ 
         success: true, 
         message: "OpenAI log ingested successfully",

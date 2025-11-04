@@ -1,0 +1,27 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: guarddog-api
+    url: http://host.docker.internal:5050
+    routes:
+      - name: api-route
+        paths:
+          - /api
+          - /api/
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PATCH
+    plugins:
+      - name: key-auth
+      - name: rate-limiting
+        config:
+          minute: 60
+          policy: local
+
+consumers:
+  - username: n8n-ingestor
+    keyauth_credentials:
+      - key: wg-test-key

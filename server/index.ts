@@ -4,8 +4,19 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeDefaultData } from "./initializeData";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+const MAX_BODY_SIZE = "256kb";
+const MAX_CONTENT_LENGTH_BYTES = 256 * 1024;
+
+app.use(express.json({ limit: MAX_BODY_SIZE }));
+app.use(express.urlencoded({ extended: false, limit: MAX_BODY_SIZE }));
+
+app.use((req, res, next) => {
+  const declaredLength = req.headers["content-length"];
+  if (declaredLength && Number(declaredLength) > MAX_CONTENT_LENGTH_BYTES) {
+    return res.status(413).json({ message: "Payload too large" });
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
